@@ -1,0 +1,204 @@
+/* Google Fonts Imports */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+:root {
+  /* Light Theme Variables */
+  --background: 255 255 255;
+  --foreground: 14 30 52;
+  --primary: 232 181 67;
+  --primary-foreground: 26 26 26;
+  --primary-hover: 212 162 48;
+  --primary-active: 192 143 29;
+  --primary-light: 254 243 217;
+  --primary-dark: 196 148 41;
+  --primary-bg: 254 247 232;
+  --surface: 255 255 255;
+  --surface-2: 243 246 249;
+  --border: 220 225 232;
+  --accent: 232 181 67;
+  --accent-foreground: 26 26 26;
+  --muted: 100 116 139;
+  --muted-foreground: 71 85 105;
+}
+
+.dark {
+  /* Dark Theme Variables */
+  --background: 15 21 30;
+  --foreground: 248 250 252;
+  --primary: 232 181 67;
+  --primary-foreground: 26 26 26;
+  --primary-hover: 240 196 89;
+  --primary-active: 248 210 110;
+  --primary-light: 26 20 10;
+  --primary-dark: 196 148 41;
+  --primary-bg: 18 15 8;
+  --surface: 18 26 36;
+  --surface-2: 24 34 48;
+  --border: 40 54 74;
+  --accent: 232 181 67;
+  --accent-foreground: 26 26 26;
+  --muted: 148 163 184;
+  --muted-foreground: 156 163 175;
+}
+
+html, body {
+  background-color: rgb(var(--background));
+  color: rgb(var(--foreground));
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  scroll-behavior: smooth;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom layout container helper */
+.container-prose {
+  width: 100%;
+  max-width: 72rem; /* 1152px */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* ==============================
+   Cards & Interactive Surfaces
+   ============================== */
+.glass-card {
+  background: rgba(var(--surface), 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--border), 0.5);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.32, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(var(--primary), 0.4);
+  box-shadow:
+    0 20px 40px -12px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(var(--primary), 0.08);
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.32, 1);
+}
+
+.clickable-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--primary), 0.5);
+  box-shadow:
+    0 16px 32px -12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(var(--primary), 0.06);
+}
+
+/* Elevated card (non-interactive) */
+.elevated-card {
+  border: 1px solid rgba(var(--border), 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease;
+}
+
+/* ==============================
+   Buttons
+   ============================== */
+.btn-primary {
+  background: rgb(var(--primary));
+  color: rgb(var(--primary-foreground));
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.32, 1);
+}
+
+.btn-primary:hover {
+  background: rgb(var(--primary-hover));
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 24px -6px rgba(var(--primary), 0.35),
+    0 0 0 1px rgba(var(--primary), 0.1);
+}
+
+.btn-primary:active {
+  background: rgb(var(--primary-active));
+  transform: translateY(0);
+  box-shadow: 0 2px 8px -4px rgba(var(--primary), 0.2);
+}
+
+.btn-secondary {
+  border: 1px solid rgba(var(--border), 0.6);
+  background: rgba(var(--surface), 0.5);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.32, 1);
+}
+
+.btn-secondary:hover {
+  background: rgb(var(--surface-2));
+  border-color: rgba(var(--primary), 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* ==============================
+   Links / Text hover effects
+   ============================== */
+.hover-link {
+  color: rgb(var(--foreground));
+  transition: color 0.2s ease;
+}
+
+.hover-link:hover {
+  color: rgb(var(--primary));
+}
+
+.underline-link {
+  color: rgb(var(--primary));
+  text-underline-offset: 4px;
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.25s ease;
+}
+
+.underline-link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* ==============================
+   Focus states
+   ============================== */
+*:focus-visible {
+  outline: 2px solid rgb(var(--primary));
+  outline-offset: 2px;
+}
+
+/* ==============================
+   Interactive Wizard Styling
+   ============================== */
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.step-dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background-color: rgb(var(--accent));
+}
+
+/* ==============================
+   Custom text styling
+   ============================== */
+h1, h2, h3, h4, .font-display {
+  font-family: 'Fraunces', Georgia, serif;
+}
+
+/* Hide scrollbar for sliders */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
