@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../services/auth';
 import api from '../../../services/api';
-import { 
-  Inbox, FileText, GraduationCap, Compass, Sparkles, LogOut, 
+import {
+  Inbox, FileText, GraduationCap, Compass, Sparkles, LogOut,
   Trash2, Edit, Plus, Check, RefreshCw, Upload, Eye
 } from 'lucide-react';
+
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
 
 const AdminDashboard = () => {
   const { user, logout, loading: authLoading } = useAuth();
@@ -493,7 +495,7 @@ const AdminDashboard = () => {
                             </div>
                             <div className="flex gap-2 items-center">
                               {sec.image && (
-                                <img src={sec.image.startsWith('/uploads') ? `http://localhost:5000${sec.image}` : sec.image} alt="Preview" className="h-10 w-16 object-cover border rounded" />
+                                <img src={sec.image.startsWith('/uploads') ? `${API_BASE}${sec.image}` : sec.image} alt="Preview" className="h-10 w-16 object-cover border rounded" />
                               )}
                               <label className="cursor-pointer inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded text-xs font-semibold hover:bg-primary hover:text-white transition-all">
                                 <Upload className="h-3.5 w-3.5" /> Upload File
