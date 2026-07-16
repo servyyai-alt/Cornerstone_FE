@@ -2,4 +2,5 @@
 // This middleware is intentionally minimal
 export const config = {
   matcher: ['/admin/:path*'],
+  
 };
