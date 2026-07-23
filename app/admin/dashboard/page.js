@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../services/auth';
 import api from '../../../services/api';
@@ -249,6 +250,12 @@ const AdminDashboard = () => {
           <h1 className="font-display text-lg font-semibold">CMS Control Centre</h1>
         </div>
         <div className="flex items-center gap-4">
+          <Link
+            href="/admin/cms"
+            className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold transition hover:border-primary"
+          >
+            CMS Studio
+          </Link>
           <span className="text-xs text-muted-foreground">Signed in as <span className="font-semibold text-foreground">{user.username}</span></span>
           <button 
             onClick={handleLogout}

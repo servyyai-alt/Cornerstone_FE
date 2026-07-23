@@ -2,19 +2,37 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import api from '../../services/api';
 import { ArrowRight, Sparkles, BookOpen, UserCheck, ShieldAlert } from 'lucide-react';
 
 const Home = () => {
   const [pageData, setPageData] = useState(null);
+  const [banners, setBanners] = useState([]);
+  const [logos, setLogos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
     const fetchHomeContent = async () => {
       try {
-        const res = await api.get('/pages/home');
-        setPageData(res.data);
+        const [pageRes, bannersRes, logosRes] = await Promise.allSettled([
+          api.get('/pages/home'),
+          api.get('/banners?public=1'),
+          api.get('/logos?public=1'),
+        ]);
+
+        if (pageRes.status === 'fulfilled') {
+          setPageData(pageRes.value.data);
+        }
+
+        if (bannersRes.status === 'fulfilled') {
+          setBanners(Array.isArray(bannersRes.value.data) ? bannersRes.value.data : []);
+        }
+
+        if (logosRes.status === 'fulfilled') {
+          setLogos(Array.isArray(logosRes.value.data) ? logosRes.value.data : []);
+        }
       } catch (err) {
         console.error('Error fetching home content:', err);
       } finally {
@@ -42,6 +60,17 @@ const Home = () => {
   const whyPathway = getSection('why-pathway');
   const recognition = getSection('recognition');
   const rollingAdmissions = getSection('rolling-admissions');
+  const featuredBanner = banners[0] || null;
+  const heroImage =
+    featuredBanner?.desktopImage ||
+    featuredBanner?.tabletImage ||
+    featuredBanner?.mobileImage ||
+    '/assets/hero.png';
+  const heroCtaPrimaryText = featuredBanner?.button1Text || 'Find Your Pathway';
+  const heroCtaPrimaryUrl = featuredBanner?.button1Url || '/find-your-pathway';
+  const heroCtaSecondaryText = featuredBanner?.button2Text || 'For Parents';
+  const heroCtaSecondaryUrl = featuredBanner?.button2Url || '/for-parents';
+  const activeLogos = logos.filter((logo) => logo.status === 'active');
 
   const ladderSteps = [
     { title: 'UK Certificate', location: 'India', duration: '8–12 months', body: 'Begin your internationally recognised qualification at home. Adjust to a UK academic style without leaving India.', awarding: 'Pearson / ATHE' },
@@ -54,29 +83,106 @@ const Home = () => {
   return (
     <main className="flex-1 bg-background text-foreground">
       {/* Hero Section */}
-      <section className="container-prose py-16 lg:py-24 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-4">
-          {hero.content || 'In partnership with recognised UK awarding organisations'}
-        </p>
-        <h1 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-7xl max-w-4xl mx-auto">
-          {hero.title || 'Begin a UK-recognised degree pathway in India.'}
-        </h1>
-        <p className="mt-6 font-display text-2xl text-primary max-w-2xl mx-auto">
-          {hero.subtitle || 'Transfer to a partner university abroad. Graduate internationally.'}
-        </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <Link
-            href="/find-your-pathway"
-            className="inline-flex items-center justify-center rounded-md bg-primary text-white px-6 py-3 text-sm font-medium shadow-md transition-all hover:bg-primary-hover hover:-translate-y-px"
-          >
-            Find Your Pathway <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-          <Link
-            href="/for-parents"
-            className="inline-flex items-center justify-center rounded-md border border-border bg-surface px-6 py-3 text-sm font-medium transition-all hover:bg-surface-2"
-          >
-            For Parents
-          </Link>
+      <section className="container-prose py-16 lg:py-24">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-4">
+              {featuredBanner?.subtitle || hero.content || 'In partnership with recognised UK awarding organisations'}
+            </p>
+            <h1 className="font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-7xl">
+              {featuredBanner?.title || hero.title || 'Begin a UK-recognised degree pathway in India.'}
+            </h1>
+            <p className="mt-6 font-display text-2xl text-primary max-w-2xl">
+              {featuredBanner?.description || hero.subtitle || 'Transfer to a partner university abroad. Graduate internationally.'}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link
+                href={heroCtaPrimaryUrl}
+                className="inline-flex items-center justify-center rounded-md bg-primary text-white px-6 py-3 text-sm font-medium shadow-md transition-all hover:bg-primary-hover hover:-translate-y-px"
+              >
+                {heroCtaPrimaryText}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+              <Link
+                href={heroCtaSecondaryUrl}
+                className="inline-flex items-center justify-center rounded-md border border-border bg-surface px-6 py-3 text-sm font-medium transition-all hover:bg-surface-2"
+              >
+                {heroCtaSecondaryText}
+              </Link>
+            </div>
+            {featuredBanner?.imageCaption && (
+              <p className="mt-4 text-xs text-muted-foreground">
+                {featuredBanner.imageCaption}
+              </p>
+            )}
+
+            {/* Partner Logos — styled to match reference: left-aligned, small caption, tight white logo pills */}
+            <div className="mt-10 pt-6 border-t border-border/60">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
+                In partnership with recognised UK awarding organisations
+              </p>
+
+              {activeLogos.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-3">
+                  {activeLogos.map((logo) => (
+                    <a
+                      key={logo._id}
+                      href={logo.websiteUrl || '#'}
+                      target={logo.websiteUrl ? '_blank' : undefined}
+                      rel={logo.websiteUrl ? 'noreferrer' : undefined}
+                      className="flex h-14 w-32 items-center justify-center rounded-lg bg-white px-4 shadow-sm transition-transform duration-300 hover:-translate-y-0.5"
+                    >
+                      <Image
+                        src={logo.logoImage}
+                        alt={logo.altText || logo.companyName}
+                        width={110}
+                        height={40}
+                        className="max-h-8 w-auto object-contain"
+                        sizes="120px"
+                      />
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center gap-3">
+                  {[
+                    { name: 'Pearson', sub: 'Edexcel' },
+                    { name: 'ATHE', sub: '' },
+                  ].map((partner) => (
+                    <div
+                      key={partner.name}
+                      className="flex h-14 w-32 items-center justify-center rounded-lg bg-white px-4 shadow-sm"
+                    >
+                      <p className="text-sm font-bold text-gray-900">{partner.name}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="relative overflow-hidden rounded-[2rem] border border-border bg-surface shadow-[0_24px_60px_-30px_rgba(0,0,0,0.35)]">
+              <div className="absolute inset-0 z-10 bg-gradient-to-tr from-black/30 via-transparent to-transparent" />
+              <Image
+                src={heroImage}
+                alt={featuredBanner?.altText || 'Cornerstone hero banner'}
+                width={1200}
+                height={1200}
+                priority={Boolean(featuredBanner?.imagePriority)}
+                className="h-[420px] w-full object-cover sm:h-[520px] lg:h-[640px]"
+                sizes="(min-width: 1024px) 42vw, 100vw"
+              />
+              <div className="absolute bottom-4 left-4 right-4 z-20 rounded-2xl border border-white/10 bg-black/55 p-4 backdrop-blur-sm">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70">
+                  {featuredBanner?.imageSeoTitle || featuredBanner?.title || 'Dynamic CMS banner'}
+                </p>
+                <p className="mt-1 text-sm text-white/90">
+                  {featuredBanner?.description || 'Manage this banner from the admin panel.'}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -142,7 +248,7 @@ const Home = () => {
             <div className="rounded-xl border border-border p-6 bg-surface transition-all duration-300 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.08)]">
               <h3 className="font-display text-xl mb-4 text-muted-foreground border-b border-border pb-2">Direct route</h3>
               <p className="text-xs text-primary uppercase tracking-widest font-semibold mb-6">Straight overseas at 18</p>
-              
+
               <div className="space-y-6">
                 <div>
                   <h4 className="font-semibold text-sm">Cost exposure</h4>
@@ -163,7 +269,7 @@ const Home = () => {
             <div className="rounded-xl border border-primary/30 p-6 bg-primary/5 shadow-sm transition-all duration-300 hover:border-primary/50 hover:shadow-[0_8px_28px_-8px_rgba(232,181,67,0.15)]">
               <h3 className="font-display text-xl mb-4 text-primary border-b border-primary/10 pb-2">Cornerstone pathway</h3>
               <p className="text-xs text-primary uppercase tracking-widest font-semibold mb-6">Start in India, finish abroad</p>
-              
+
               <div className="space-y-6">
                 <div>
                   <h4 className="font-semibold text-sm text-primary">Cost exposure</h4>
@@ -283,7 +389,7 @@ const Home = () => {
             <h2 className="font-display text-3xl sm:text-4xl">{recognition.title || 'Awarded by recognised UK organisations.'}</h2>
             <p className="mt-4 text-sm text-muted-foreground">{recognition.content || 'Cornerstone pathway qualifications are awarded by established UK awarding organisations Pearson and ATHE.'}</p>
           </div>
-          
+
           <div className="grid gap-6 md:grid-cols-2">
             {(recognition.items && recognition.items.length > 0 ? recognition.items : [
               { title: 'Pearson BTEC', content: 'The UK\'s largest awarding organisation. Pearson BTEC and Higher National qualifications are recognised by universities and employers across more than 70 countries.' },

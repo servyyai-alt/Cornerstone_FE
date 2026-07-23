@@ -72,7 +72,7 @@ const Footer = () => {
           <p className="text-xs uppercase tracking-wider text-muted-foreground">In partnership with recognised UK awarding organisations</p>
           <div className="mt-4 flex flex-wrap items-center gap-4">
             <div className="inline-flex h-11 items-center rounded-md bg-white px-4 py-2 ring-1 ring-border/60">
-              <span className="font-semibold text-lg text-[#003B46]">Pearso</span>
+              <span className="font-semibold text-lg text-[#003B46]">Pearson</span>
             </div>
             <div className="inline-flex h-11 items-center rounded-md bg-white px-4 py-2 ring-1 ring-border/60">
               <span className="font-semibold text-lg text-[#0F2A4A]">ATHE</span>

@@ -8,10 +8,19 @@ const nextConfig = {
         port: '5000',
         pathname: '/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
     ],
   },
   async rewrites() {
-    const API_URL = process.env.API_URL || 'http://localhost:5000';
+    const API_URL =
+      process.env.API_URL ||
+      (process.env.NEXT_PUBLIC_API_URL
+        ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '')
+        : 'http://localhost:5000');
     return [
       {
         source: '/api/:path*',
