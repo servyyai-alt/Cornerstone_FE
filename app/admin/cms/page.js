@@ -63,6 +63,67 @@ const emptyWebsite = {
   maintenanceMode: false,
 };
 
+const buildContactMapSrc = (contactSettings = {}) => {
+  const latitudeRaw = String(contactSettings.latitude ?? '').trim();
+  const longitudeRaw = String(contactSettings.longitude ?? '').trim();
+
+  if (latitudeRaw && longitudeRaw) {
+    const latitude = Number(latitudeRaw);
+    const longitude = Number(longitudeRaw);
+
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      return `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`;
+    }
+  }
+
+  const address = String(contactSettings.officeAddress || '').trim();
+  if (address) {
+    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=15&output=embed`;
+  }
+
+  return '';
+};
+
+const buildContactMapEmbed = (contactSettings = {}) => {
+  const src = buildContactMapSrc(contactSettings);
+  if (!src) return '';
+
+  return `<iframe src="${src}" width="100%" height="420" style="border:0;" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>`;
+};
+
+const emptyContact = {
+  officeAddress: '',
+  phoneNumber: '',
+  whatsappNumber: '',
+  email: '',
+  supportEmail: '',
+  googleMapEmbed: '',
+  latitude: '',
+  longitude: '',
+  workingHours: '',
+  facebookUrl: '',
+  instagramUrl: '',
+  linkedinUrl: '',
+  twitterUrl: '',
+  youtubeUrl: '',
+  telegramUrl: '',
+  pinterestUrl: '',
+  footerContactDetails: '',
+  contactPageTitle: '',
+  description: '',
+  recipientEmail: '',
+  ccEmail: '',
+  bccEmail: '',
+  autoReplyEnable: false,
+  autoReplySubject: '',
+  autoReplyTemplate: '',
+  successMessage: '',
+  failureMessage: '',
+  spamProtection: false,
+  recaptchaSiteKey: '',
+  recaptchaSecretKey: '',
+};
+
 const compressImage = (file, maxWidth = 1600, quality = 0.82) =>
   new Promise((resolve, reject) => {
     if (!file || !file.type?.startsWith('image/')) {
@@ -119,6 +180,7 @@ const AdminCmsStudio = () => {
   const [banners, setBanners] = useState([]);
   const [logos, setLogos] = useState([]);
   const [websiteSettings, setWebsiteSettings] = useState(emptyWebsite);
+  const [contactSettings, setContactSettings] = useState(emptyContact);
 
   const [editingBannerId, setEditingBannerId] = useState(null);
   const [editingLogoId, setEditingLogoId] = useState(null);
@@ -134,10 +196,11 @@ const AdminCmsStudio = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [bannerRes, logoRes, websiteRes] = await Promise.all([
+      const [bannerRes, logoRes, websiteRes, contactRes] = await Promise.all([
         api.get('/banners'),
         api.get('/logos'),
         api.get('/settings/website'),
+        api.get('/settings/contact'),
       ]);
 
       setBanners(Array.isArray(bannerRes.data) ? bannerRes.data : []);
@@ -145,6 +208,10 @@ const AdminCmsStudio = () => {
       setWebsiteSettings({
         ...emptyWebsite,
         ...websiteRes.data,
+      });
+      setContactSettings({
+        ...emptyContact,
+        ...contactRes.data,
       });
     } catch (err) {
       console.error('Failed to load CMS studio data:', err);
@@ -175,6 +242,18 @@ const AdminCmsStudio = () => {
     });
 
     return res.data.mediaItem.url;
+  };
+
+  const handleAssetUpload = async (file, onSuccess, contextLabel) => {
+    if (!file) return;
+
+    try {
+      const url = await uploadAsset(file);
+      onSuccess(url);
+    } catch (err) {
+      console.error(`Failed to upload ${contextLabel}:`, err);
+      alert(err?.response?.data?.message || `Unable to upload ${contextLabel}`);
+    }
   };
 
   const saveBanner = async (e) => {
@@ -241,6 +320,31 @@ const AdminCmsStudio = () => {
     } catch (err) {
       console.error('Failed to save website settings:', err);
       alert(err.response?.data?.message || 'Unable to save website settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveContact = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const normalized = {
+        ...contactSettings,
+        latitude: contactSettings.latitude === '' ? null : Number(contactSettings.latitude),
+        longitude: contactSettings.longitude === '' ? null : Number(contactSettings.longitude),
+      };
+
+      if (!String(normalized.googleMapEmbed || '').trim()) {
+        normalized.googleMapEmbed = buildContactMapEmbed(normalized);
+      }
+
+      await api.put('/settings/contact', normalized);
+      await loadData();
+      alert('Contact settings saved');
+    } catch (err) {
+      console.error('Failed to save contact settings:', err);
+      alert(err.response?.data?.message || 'Unable to save contact settings');
     } finally {
       setSaving(false);
     }
@@ -351,7 +455,7 @@ const AdminCmsStudio = () => {
       </header>
 
       <section className="container-prose py-8">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Banners</p>
             <p className="mt-3 text-3xl font-semibold">{banners.length}</p>
@@ -367,6 +471,11 @@ const AdminCmsStudio = () => {
             <p className="mt-3 truncate text-sm font-semibold">{websiteSettings.demoFormUrl || 'Not configured'}</p>
             <p className="mt-2 text-sm text-muted-foreground">Displayed on the public contact page in an iframe.</p>
           </div>
+          <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Contact CMS</p>
+            <p className="mt-3 truncate text-sm font-semibold">{contactSettings.officeAddress || 'Not configured'}</p>
+            <p className="mt-2 text-sm text-muted-foreground">Managed office details and map embed.</p>
+          </div>
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">
@@ -374,6 +483,7 @@ const AdminCmsStudio = () => {
             ['banners', 'Hero Banners'],
             ['logos', 'Partnership Logos'],
             ['website', 'Website Settings'],
+            ['contact', 'Contact Settings'],
           ].map(([key, label]) => (
             <button
               key={key}
@@ -482,11 +592,11 @@ const AdminCmsStudio = () => {
                             type="file"
                             accept="image/*"
                             className="mt-2 block w-full text-xs"
-                            onChange={async (e) => {
+                            onChange={(e) => {
                               const file = e.target.files?.[0];
-                              if (!file) return;
-                              const url = await uploadAsset(file);
-                              setBannerForm((prev) => ({ ...prev, [field]: url }));
+                              void handleAssetUpload(file, (url) => {
+                                setBannerForm((prev) => ({ ...prev, [field]: url }));
+                              }, `banner ${label}`);
                             }}
                           />
                           {bannerForm[field] && (
@@ -692,11 +802,11 @@ const AdminCmsStudio = () => {
                         type="file"
                         accept="image/*"
                         className="mt-2 block w-full text-xs"
-                        onChange={async (e) => {
+                        onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (!file) return;
-                          const url = await uploadAsset(file);
-                          setLogoForm((prev) => ({ ...prev, logoImage: url }));
+                          void handleAssetUpload(file, (url) => {
+                            setLogoForm((prev) => ({ ...prev, logoImage: url }));
+                          }, 'logo image');
                         }}
                       />
                       {logoForm.logoImage && (
@@ -860,11 +970,11 @@ const AdminCmsStudio = () => {
                           type="file"
                           accept="image/*"
                           className="mt-2 block w-full text-xs"
-                          onChange={async (e) => {
+                          onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (!file) return;
-                            const url = await uploadAsset(file);
-                            setWebsiteSettings((prev) => ({ ...prev, [field]: url }));
+                            void handleAssetUpload(file, (url) => {
+                              setWebsiteSettings((prev) => ({ ...prev, [field]: url }));
+                            }, `${label.toLowerCase()}`);
                           }}
                         />
                         {websiteSettings[field] && (
@@ -925,6 +1035,261 @@ const AdminCmsStudio = () => {
                   </button>
                   <p className="text-xs text-muted-foreground">
                     The demo form URL appears on the public contact page in an iframe once saved.
+                  </p>
+                </div>
+              </form>
+            )}
+
+            {activePanel === 'contact' && (
+              <form onSubmit={saveContact} className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+                <div className="border-b border-border pb-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Contact settings</p>
+                  <h2 className="mt-1 font-display text-2xl">Contact page content and map</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Anything you change here will show on the live contact page after refresh.
+                  </p>
+                </div>
+
+                <div className="mt-5 grid gap-5 lg:grid-cols-2">
+                  <div className="space-y-3">
+                    <input
+                      value={contactSettings.contactPageTitle || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, contactPageTitle: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Contact page title"
+                    />
+                    <textarea
+                      value={contactSettings.description || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, description: e.target.value })}
+                      rows={4}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Contact page description"
+                    />
+                    <textarea
+                      value={contactSettings.officeAddress || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, officeAddress: e.target.value })}
+                      rows={3}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Office address"
+                    />
+                    <input
+                      value={contactSettings.workingHours || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, workingHours: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Working hours"
+                    />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <input
+                        type="number"
+                        value={contactSettings.latitude || ''}
+                        onChange={(e) => setContactSettings({ ...contactSettings, latitude: e.target.value })}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                        placeholder="Latitude"
+                      />
+                      <input
+                        type="number"
+                        value={contactSettings.longitude || ''}
+                        onChange={(e) => setContactSettings({ ...contactSettings, longitude: e.target.value })}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                        placeholder="Longitude"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <input
+                        value={contactSettings.phoneNumber || ''}
+                        onChange={(e) => setContactSettings({ ...contactSettings, phoneNumber: e.target.value })}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                        placeholder="Phone number"
+                      />
+                      <input
+                        value={contactSettings.whatsappNumber || ''}
+                        onChange={(e) => setContactSettings({ ...contactSettings, whatsappNumber: e.target.value })}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                        placeholder="WhatsApp number"
+                      />
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <input
+                        value={contactSettings.email || ''}
+                        onChange={(e) => setContactSettings({ ...contactSettings, email: e.target.value })}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                        placeholder="Primary email"
+                      />
+                      <input
+                        value={contactSettings.supportEmail || ''}
+                        onChange={(e) => setContactSettings({ ...contactSettings, supportEmail: e.target.value })}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                        placeholder="Support email"
+                      />
+                    </div>
+                    <input
+                      value={contactSettings.footerContactDetails || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, footerContactDetails: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Footer contact details"
+                    />
+                    <textarea
+                      value={contactSettings.googleMapEmbed || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, googleMapEmbed: e.target.value })}
+                      rows={6}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono"
+                      placeholder='<iframe src="https://www.google.com/maps/embed?..."></iframe>'
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Paste the full Google Maps embed iframe here, or leave it blank and use address / latitude / longitude.
+                    </p>
+                    <div className="overflow-hidden rounded-xl border border-border bg-background">
+                      {String(contactSettings.googleMapEmbed || '').trim() ? (
+                        <div
+                          className="w-full"
+                          dangerouslySetInnerHTML={{ __html: contactSettings.googleMapEmbed }}
+                        />
+                      ) : buildContactMapSrc(contactSettings) ? (
+                        <iframe
+                          title="Contact map preview"
+                          src={buildContactMapSrc(contactSettings)}
+                          className="h-[320px] w-full border-0"
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <div className="p-4 text-xs text-muted-foreground">
+                          Enter an office address, latitude and longitude, or paste a Google Maps iframe to preview the map.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2 lg:col-span-2">
+                    <input
+                      value={contactSettings.facebookUrl || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, facebookUrl: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Facebook URL"
+                    />
+                    <input
+                      value={contactSettings.instagramUrl || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, instagramUrl: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Instagram URL"
+                    />
+                    <input
+                      value={contactSettings.linkedinUrl || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, linkedinUrl: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="LinkedIn URL"
+                    />
+                    <input
+                      value={contactSettings.twitterUrl || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, twitterUrl: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="X / Twitter URL"
+                    />
+                    <input
+                      value={contactSettings.youtubeUrl || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, youtubeUrl: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="YouTube URL"
+                    />
+                    <input
+                      value={contactSettings.telegramUrl || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, telegramUrl: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Telegram URL"
+                    />
+                    <input
+                      value={contactSettings.pinterestUrl || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, pinterestUrl: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Pinterest URL"
+                    />
+                  </div>
+
+                  <div className="grid gap-3 lg:col-span-2 md:grid-cols-3">
+                    <input
+                      value={contactSettings.recipientEmail || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, recipientEmail: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Recipient email"
+                    />
+                    <input
+                      value={contactSettings.ccEmail || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, ccEmail: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="CC email"
+                    />
+                    <input
+                      value={contactSettings.bccEmail || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, bccEmail: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="BCC email"
+                    />
+                  </div>
+
+                  <div className="grid gap-3 lg:col-span-2 md:grid-cols-2">
+                    <label className="flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(contactSettings.autoReplyEnable)}
+                        onChange={(e) => setContactSettings({ ...contactSettings, autoReplyEnable: e.target.checked })}
+                        className="h-4 w-4"
+                      />
+                      <span className="text-sm">Enable auto reply</span>
+                    </label>
+                    <label className="flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(contactSettings.spamProtection)}
+                        onChange={(e) => setContactSettings({ ...contactSettings, spamProtection: e.target.checked })}
+                        className="h-4 w-4"
+                      />
+                      <span className="text-sm">Spam protection</span>
+                    </label>
+                  </div>
+
+                  <div className="grid gap-3 lg:col-span-2 md:grid-cols-2">
+                    <input
+                      value={contactSettings.autoReplySubject || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, autoReplySubject: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Auto reply subject"
+                    />
+                    <input
+                      value={contactSettings.recaptchaSiteKey || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, recaptchaSiteKey: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="reCAPTCHA site key"
+                    />
+                    <textarea
+                      value={contactSettings.autoReplyTemplate || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, autoReplyTemplate: e.target.value })}
+                      rows={4}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm md:col-span-2"
+                      placeholder="Auto reply message"
+                    />
+                    <input
+                      value={contactSettings.recaptchaSecretKey || ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, recaptchaSecretKey: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm md:col-span-2"
+                      placeholder="reCAPTCHA secret key"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <button
+                    disabled={saving}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary-hover disabled:opacity-60"
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                    {saving ? 'Saving...' : 'Save contact settings'}
+                  </button>
+                  <p className="text-xs text-muted-foreground">
+                    Contact details, map, and links on the public contact page are all driven from this panel.
                   </p>
                 </div>
               </form>

@@ -368,6 +368,39 @@ const extractWebsiteSettings = (payload) => {
   return candidate;
 };
 
+const buildFallbackMapSrc = (contactSettings) => {
+  const latitudeRaw = String(contactSettings?.latitude ?? '').trim();
+  const longitudeRaw = String(contactSettings?.longitude ?? '').trim();
+
+  if (latitudeRaw && longitudeRaw) {
+    const latitude = Number(latitudeRaw);
+    const longitude = Number(longitudeRaw);
+
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      return `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`;
+    }
+  }
+
+  const address = String(contactSettings?.officeAddress || '').trim();
+  if (address) {
+    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&z=15&output=embed`;
+  }
+
+  return null;
+};
+
+const extractMapSrc = (contactSettings) => {
+  const rawEmbed = String(contactSettings?.googleMapEmbed || '').trim();
+  if (rawEmbed) {
+    const match = rawEmbed.match(/src=['"]([^'"]+)['"]/i);
+    if (match?.[1]) {
+      return match[1];
+    }
+  }
+
+  return buildFallbackMapSrc(contactSettings);
+};
+
 const Contact = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -382,6 +415,7 @@ const Contact = () => {
   const [error, setError] = useState('');
   const demoFormUrl = normalizeMetaUrl(websiteSettings?.demoFormUrl);
   const showDemoForm = Boolean(demoFormUrl);
+  const contactMapSrc = extractMapSrc(contactSettings);
 
   useEffect(() => {
     let mounted = true;
@@ -389,8 +423,8 @@ const Contact = () => {
     const loadContactPageData = async () => {
       try {
         const [contactRes, websiteRes] = await Promise.all([
-          api.get('/settings/contact'),
-          api.get(`/settings/website?_ts=${Date.now()}`),
+          api.get('/settings/contact?public=1'),
+          api.get(`/settings/website?public=1&_ts=${Date.now()}`),
         ]);
 
         if (!mounted) return;
@@ -627,8 +661,8 @@ const Contact = () => {
         )}
       </section>
 
-      <section className="container-prose mt-16 max-w-4xl">
-        <div className="grid gap-4 sm:grid-cols-3">
+      <section className="container-prose mt-16 max-w-5xl">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-xl border border-border bg-surface p-5">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Office Address</p>
             <p className="mt-3 text-sm leading-relaxed text-foreground">
@@ -651,34 +685,92 @@ const Contact = () => {
               {contactSettings?.supportEmail || 'support@cornerstone.edu'}
             </p>
           </div>
+          <div className="rounded-xl border border-border bg-surface p-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Working Hours</p>
+            <p className="mt-3 text-sm leading-relaxed text-foreground">
+              {contactSettings?.workingHours || 'Mon-Sat, 9:00 AM to 6:00 PM'}
+            </p>
+          </div>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          {contactSettings?.googleMapEmbed ? (
-            <div
-              className="overflow-hidden rounded-2xl border border-border bg-surface"
-              dangerouslySetInnerHTML={{ __html: contactSettings.googleMapEmbed }}
-            />
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.75fr)] lg:items-start">
+          {contactMapSrc ? (
+            <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+              <div
+                className="relative w-full"
+                style={{ minHeight: 'clamp(320px, 55vh, 680px)' }}
+              >
+                <iframe
+                  title="Cornerstone office location map"
+                  src={contactMapSrc}
+                  className="absolute inset-0 h-full w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              </div>
+            </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-sm text-muted-foreground">
               Add a Google map embed in Admin to show your office location here.
             </div>
           )}
 
-          <div className="rounded-2xl border border-border bg-surface p-6">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Status</p>
-            <h2 className="mt-2 font-display text-2xl">Live contact routing</h2>
-            <p className="mt-3 text-sm text-muted-foreground">
-              The Meta lead form is loaded dynamically from the CMS. If no active form exists, this page falls back to the website contact form automatically.
-            </p>
-            <div className="mt-5 rounded-xl border border-border bg-background p-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-primary" />
-                <span>{contactSettings?.email || 'hello@cornerstone.edu'}</span>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Status</p>
+              <h2 className="mt-2 font-display text-2xl">Live contact routing</h2>
+              <p className="mt-3 text-sm text-muted-foreground">
+                The contact details, hours, and map here are all managed from the Contact Settings panel in CMS.
+              </p>
+              <div className="mt-5 rounded-xl border border-border bg-background p-4 text-sm space-y-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <span>{contactSettings?.email || 'hello@cornerstone.edu'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                  <span>{contactSettings?.phoneNumber || '+91 98765 43210'}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {contactSettings?.footerContactDetails || 'Our team is available during business hours for guidance and admissions support.'}
+                </p>
               </div>
-              <div className="mt-3 flex items-center gap-2">
-                <Phone className="h-4 w-4 text-primary" />
-                <span>{contactSettings?.phoneNumber || '+91 98765 43210'}</span>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Social Links</p>
+              <div className="mt-4 space-y-2 text-sm">
+                {[
+                  ['facebookUrl', 'Facebook'],
+                  ['instagramUrl', 'Instagram'],
+                  ['linkedinUrl', 'LinkedIn'],
+                  ['twitterUrl', 'X / Twitter'],
+                  ['youtubeUrl', 'YouTube'],
+                ].map(([field, label]) =>
+                  contactSettings?.[field] ? (
+                    <a
+                      key={field}
+                      href={contactSettings[field]}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-lg border border-border bg-background px-3 py-2 text-foreground transition hover:border-primary hover:text-primary"
+                    >
+                      {label}
+                    </a>
+                  ) : null
+                )}
+                {![
+                  contactSettings?.facebookUrl,
+                  contactSettings?.instagramUrl,
+                  contactSettings?.linkedinUrl,
+                  contactSettings?.twitterUrl,
+                  contactSettings?.youtubeUrl,
+                ].some(Boolean) && (
+                  <p className="text-sm text-muted-foreground">
+                    Add social links in CMS to show them here.
+                  </p>
+                )}
               </div>
             </div>
           </div>

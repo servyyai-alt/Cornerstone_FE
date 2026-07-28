@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useDeferredValue, useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../services/auth';
@@ -12,19 +12,77 @@ import {
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
 
+const createEmptySection = () => ({
+  sectionId: 'hero',
+  title: '',
+  subtitle: '',
+  content: '',
+  image: '',
+  isVisible: true,
+  items: [],
+});
+
+const titleizeSlug = (slug = '') =>
+  slug
+    .toString()
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .trim() || 'Untitled Page';
+
+const buildPageDraft = (slug) => {
+  return {
+    slug,
+    title: titleizeSlug(slug),
+    description: '',
+    metaDescription: '',
+    sections: [createEmptySection()],
+  };
+};
+
+const normalizePageDraft = (page, slug) => {
+  const fallback = buildPageDraft(slug);
+
+  return {
+    ...fallback,
+    ...page,
+    slug: page?.slug || slug,
+    title: page?.title || fallback.title,
+    description: page?.description || fallback.description,
+    metaDescription: page?.metaDescription || fallback.metaDescription,
+    sections: Array.isArray(page?.sections) && page.sections.length > 0 ? page.sections : fallback.sections,
+  };
+};
+
+const inquiryTypeLabel = {
+  contact: 'Contact',
+  consultation: 'Consultation',
+  pathway: 'Pathway',
+  eligibility: 'Eligibility',
+};
+
+const inquiryStatusLabel = {
+  unread: 'Unread',
+  read: 'Read',
+  archived: 'Archived',
+};
+
 const AdminDashboard = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState('inquiries');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [inquiryStatusFilter, setInquiryStatusFilter] = useState('all');
+  const deferredSearchTerm = useDeferredValue(searchTerm);
 
   // Core CMS Data states
   const [inquiries, setInquiries] = useState([]);
-  const [pages, setPages] = useState([]);
   const [universities, setUniversities] = useState([]);
   const [stories, setStories] = useState([]);
   const [destinations, setDestinations] = useState([]);
   
   const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
 
   // Editing States
   const [editingPage, setEditingPage] = useState(null);
@@ -55,23 +113,31 @@ const AdminDashboard = () => {
   }, [user, authLoading, router]);
 
   // Fetch all dashboard data
-  const fetchData = async () => {
+  const loadBaseData = async () => {
     setLoading(true);
     try {
-      const [inqRes, uniRes, storyRes, destRes] = await Promise.all([
+      const [inqRes, uniRes, storyRes, destRes] = await Promise.allSettled([
         api.get('/inquiries'),
         api.get('/universities'),
         api.get('/success-stories'),
         api.get('/destinations')
       ]);
-      setInquiries(inqRes.data);
-      setUniversities(uniRes.data);
-      setStories(storyRes.data);
-      setDestinations(destRes.data);
 
-      // Fetch currently selected page config
-      const pageRes = await api.get(`/pages/${selectedPageSlug}`);
-      setEditingPage(pageRes.data);
+      if (inqRes.status === 'fulfilled') {
+        setInquiries(Array.isArray(inqRes.value.data) ? inqRes.value.data : []);
+      }
+
+      if (uniRes.status === 'fulfilled') {
+        setUniversities(Array.isArray(uniRes.value.data) ? uniRes.value.data : []);
+      }
+
+      if (storyRes.status === 'fulfilled') {
+        setStories(Array.isArray(storyRes.value.data) ? storyRes.value.data : []);
+      }
+
+      if (destRes.status === 'fulfilled') {
+        setDestinations(Array.isArray(destRes.value.data) ? destRes.value.data : []);
+      }
     } catch (err) {
       console.error('Error fetching dashboard datasets:', err);
     } finally {
@@ -79,9 +145,32 @@ const AdminDashboard = () => {
     }
   };
 
+  const loadPageContent = async (slug) => {
+    setPageLoading(true);
+    try {
+      const pageRes = await api.get(`/pages/${slug}`);
+      setEditingPage(normalizePageDraft(pageRes.data, slug));
+    } catch (err) {
+      if (err.response?.status === 404) {
+        setEditingPage(buildPageDraft(slug));
+      } else {
+        console.error(`Error fetching page content for ${slug}:`, err);
+        setEditingPage(null);
+      }
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      fetchData();
+      loadBaseData();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadPageContent(selectedPageSlug);
     }
   }, [user, selectedPageSlug]);
 
@@ -94,10 +183,8 @@ const AdminDashboard = () => {
   const markInquiryStatus = async (id, status) => {
     try {
       await api.put(`/inquiries/${id}`, { status });
-      setInquiries(inquiries.map(i => i._id === id ? { ...i, status } : i));
-      if (selectedInquiry?._id === id) {
-        setSelectedInquiry({ ...selectedInquiry, status });
-      }
+      setInquiries((prev) => prev.map((i) => (i._id === id ? { ...i, status } : i)));
+      setSelectedInquiry((current) => (current?._id === id ? { ...current, status } : current));
     } catch (err) {
       console.error('Error updating status:', err);
     }
@@ -107,8 +194,8 @@ const AdminDashboard = () => {
     if (!window.confirm('Delete this inquiry?')) return;
     try {
       await api.delete(`/inquiries/${id}`);
-      setInquiries(inquiries.filter(i => i._id !== id));
-      setSelectedInquiry(null);
+      setInquiries((prev) => prev.filter((i) => i._id !== id));
+      setSelectedInquiry((current) => (current?._id === id ? null : current));
     } catch (err) {
       console.error('Error deleting inquiry:', err);
     }
@@ -125,10 +212,10 @@ const AdminDashboard = () => {
     try {
       if (editingUni) {
         const res = await api.put(`/universities/${editingUni._id}`, data);
-        setUniversities(universities.map(u => u._id === editingUni._id ? res.data.university : u));
+        setUniversities((prev) => prev.map((u) => (u._id === editingUni._id ? res.data.university : u)));
       } else {
         const res = await api.post('/universities', data);
-        setUniversities([...universities, res.data.university]);
+        setUniversities((prev) => [...prev, res.data.university]);
       }
       setUniFormOpen(false);
       setEditingUni(null);
@@ -141,7 +228,7 @@ const AdminDashboard = () => {
     if (!window.confirm('Delete this university?')) return;
     try {
       await api.delete(`/universities/${id}`);
-      setUniversities(universities.filter(u => u._id !== id));
+      setUniversities((prev) => prev.filter((u) => u._id !== id));
     } catch (err) {
       console.error('Error deleting university:', err);
     }
@@ -153,10 +240,10 @@ const AdminDashboard = () => {
     try {
       if (editingStory) {
         const res = await api.put(`/success-stories/${editingStory._id}`, storyForm);
-        setStories(stories.map(s => s._id === editingStory._id ? res.data.story : s));
+        setStories((prev) => prev.map((s) => (s._id === editingStory._id ? res.data.story : s)));
       } else {
         const res = await api.post('/success-stories', storyForm);
-        setStories([...stories, res.data.story]);
+        setStories((prev) => [...prev, res.data.story]);
       }
       setStoryFormOpen(false);
       setEditingStory(null);
@@ -169,34 +256,80 @@ const AdminDashboard = () => {
     if (!window.confirm('Delete this success story?')) return;
     try {
       await api.delete(`/success-stories/${id}`);
-      setStories(stories.filter(s => s._id !== id));
+      setStories((prev) => prev.filter((s) => s._id !== id));
     } catch (err) {
       console.error('Error deleting success story:', err);
     }
   };
 
   // Edit Page Section Texts
+  const handlePageFieldChange = (field, value) => {
+    setEditingPage((current) => (current ? { ...current, [field]: value } : current));
+  };
+
   const handlePageSectionChange = (sectionIdx, field, value) => {
-    const updatedSections = [...editingPage.sections];
-    updatedSections[sectionIdx] = {
-      ...updatedSections[sectionIdx],
-      [field]: value
-    };
-    setEditingPage({ ...editingPage, sections: updatedSections });
+    setEditingPage((current) => {
+      if (!current) return current;
+
+      const updatedSections = [...(current.sections || [])];
+      updatedSections[sectionIdx] = {
+        ...updatedSections[sectionIdx],
+        [field]: value,
+      };
+
+      return { ...current, sections: updatedSections };
+    });
   };
 
   const handlePageItemChange = (sectionIdx, itemIdx, field, value) => {
-    const updatedSections = [...editingPage.sections];
-    const updatedItems = [...updatedSections[sectionIdx].items];
-    updatedItems[itemIdx] = {
-      ...updatedItems[itemIdx],
-      [field]: value
-    };
-    updatedSections[sectionIdx] = {
-      ...updatedSections[sectionIdx],
-      items: updatedItems
-    };
-    setEditingPage({ ...editingPage, sections: updatedSections });
+    setEditingPage((current) => {
+      if (!current) return current;
+
+      const updatedSections = [...(current.sections || [])];
+      const updatedItems = [...(updatedSections[sectionIdx]?.items || [])];
+      updatedItems[itemIdx] = {
+        ...updatedItems[itemIdx],
+        [field]: value,
+      };
+      updatedSections[sectionIdx] = {
+        ...updatedSections[sectionIdx],
+        items: updatedItems,
+      };
+
+      return { ...current, sections: updatedSections };
+    });
+  };
+
+  const addPageSection = () => {
+    setEditingPage((current) => {
+      if (!current) return current;
+
+      const sections = [...(current.sections || [])];
+      const nextIndex = sections.length + 1;
+      sections.push({
+        sectionId: `section-${nextIndex}`,
+        title: '',
+        subtitle: '',
+        content: '',
+        image: '',
+        isVisible: true,
+        items: [],
+      });
+
+      return { ...current, sections };
+    });
+  };
+
+  const removePageSection = (sectionIdx) => {
+    if (!window.confirm('Remove this section from the page?')) return;
+
+    setEditingPage((current) => {
+      if (!current) return current;
+
+      const sections = [...(current.sections || [])];
+      sections.splice(sectionIdx, 1);
+      return { ...current, sections };
+    });
   };
 
   // Upload file for banner or image replacement
@@ -222,14 +355,38 @@ const AdminDashboard = () => {
   };
 
   const savePageContent = async () => {
+    if (!editingPage) return;
+
     try {
-      await api.put(`/pages/${selectedPageSlug}`, editingPage);
+      const payload = {
+        ...editingPage,
+        title: editingPage.title || titleizeSlug(selectedPageSlug),
+      };
+
+      await api.put(`/pages/${selectedPageSlug}`, payload);
+      await loadPageContent(selectedPageSlug);
       alert('Page content updated successfully!');
     } catch (err) {
       console.error('Error saving page changes:', err);
       alert('Failed to save page changes.');
     }
   };
+
+  const filteredInquiries = inquiries.filter((inquiry) => {
+    const search = deferredSearchTerm.trim().toLowerCase();
+    const matchesSearch =
+      !search ||
+      inquiry.name?.toLowerCase().includes(search) ||
+      inquiry.email?.toLowerCase().includes(search) ||
+      inquiry.phone?.toLowerCase().includes(search) ||
+      inquiry.type?.toLowerCase().includes(search);
+    const matchesStatus = inquiryStatusFilter === 'all' || inquiry.status === inquiryStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const unreadCount = inquiries.filter((inquiry) => inquiry.status === 'unread').length;
+  const readCount = inquiries.filter((inquiry) => inquiry.status === 'read').length;
+  const archivedCount = inquiries.filter((inquiry) => inquiry.status === 'archived').length;
 
   if (authLoading || !user) {
     return (
@@ -271,25 +428,25 @@ const AdminDashboard = () => {
         {/* Sidebar */}
         <aside className="w-full md:w-64 border-r border-border bg-surface p-4 flex flex-col gap-1.5">
           <button
-            onClick={() => setActiveTab('inquiries')}
+            onClick={() => startTransition(() => setActiveTab('inquiries'))}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'inquiries' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(232,181,67,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
           >
             <Inbox className="h-4 w-4" /> Inbox Leads ({inquiries.filter(i => i.status === 'unread').length})
           </button>
           <button
-            onClick={() => setActiveTab('pages')}
+            onClick={() => startTransition(() => setActiveTab('pages'))}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'pages' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(232,181,67,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
           >
             <FileText className="h-4 w-4" /> Edit Page Content
           </button>
           <button
-            onClick={() => setActiveTab('universities')}
+            onClick={() => startTransition(() => setActiveTab('universities'))}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'universities' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(232,181,67,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
           >
             <GraduationCap className="h-4 w-4" /> Partner Universities ({universities.length})
           </button>
           <button
-            onClick={() => setActiveTab('stories')}
+            onClick={() => startTransition(() => setActiveTab('stories'))}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'stories' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(232,181,67,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
           >
             <Sparkles className="h-4 w-4" /> Success Stories ({stories.length})
@@ -297,8 +454,8 @@ const AdminDashboard = () => {
         </aside>
 
         {/* Content Area */}
-        <section className="flex-1 p-6 md:p-8 bg-surface-2/30 overflow-y-auto max-h-[calc(100vh-68px)]">
-          {loading ? (
+        <section className={`flex-1 p-6 md:p-8 bg-surface-2/30 overflow-y-auto max-h-[calc(100vh-68px)] transition-opacity duration-200 ${isPending ? 'opacity-95' : 'opacity-100'}`}>
+          {loading || pageLoading ? (
             <div className="flex justify-center items-center py-20">
               <RefreshCw className="h-8 w-8 animate-spin text-primary" />
             </div>
@@ -307,20 +464,72 @@ const AdminDashboard = () => {
               {/* TAB 1: INBOX LEADS */}
               {activeTab === 'inquiries' && (
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center border-b border-border pb-4">
-                    <h2 className="font-display text-2xl font-semibold">Admissions Lead Inbox</h2>
-                    <p className="text-xs text-muted-foreground">Review form inquiries</p>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Unread leads</p>
+                      <p className="mt-3 font-display text-3xl">{unreadCount}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">Needs a quick follow-up.</p>
+                    </div>
+                    <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Active leads</p>
+                      <p className="mt-3 font-display text-3xl">{readCount}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">Already reviewed or in progress.</p>
+                    </div>
+                    <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Archived</p>
+                      <p className="mt-3 font-display text-3xl">{archivedCount}</p>
+                      <p className="mt-2 text-sm text-muted-foreground">Older requests kept for records.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface px-5 py-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <h2 className="font-display text-2xl font-semibold">Admissions Lead Inbox</h2>
+                      <p className="text-xs text-muted-foreground">Search by name, email, phone, or inquiry type.</p>
+                    </div>
+                    <div className="flex flex-1 flex-col gap-3 lg:max-w-2xl">
+                      <input
+                        type="search"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search leads..."
+                        className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          ['all', 'All'],
+                          ['unread', 'Unread'],
+                          ['read', 'Read'],
+                          ['archived', 'Archived'],
+                        ].map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setInquiryStatusFilter(value)}
+                            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                              inquiryStatusFilter === value
+                                ? 'bg-primary text-primary-foreground'
+                                : 'border border-border bg-background text-foreground hover:border-primary'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="grid gap-6 md:grid-cols-12">
                     {/* Inquiry List */}
                     <div className="md:col-span-7 space-y-3">
-                      {inquiries.length === 0 ? (
+                      {filteredInquiries.length === 0 ? (
                         <p className="text-center py-10 border border-dashed border-border rounded text-muted-foreground text-sm">
-                          No leads submitted yet.
+                          {searchTerm || inquiryStatusFilter !== 'all'
+                            ? 'No leads match the current search and filter.'
+                            : 'No leads submitted yet.'}
                         </p>
                       ) : (
-                        inquiries.map((inq) => (
+                        filteredInquiries.map((inq) => (
                           <div 
                             key={inq._id}
                             onClick={() => setSelectedInquiry(inq)}
@@ -329,7 +538,7 @@ const AdminDashboard = () => {
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className={`text-[10px] uppercase px-2 py-0.5 rounded font-semibold ${inq.type === 'pathway' ? 'bg-primary/10 text-primary' : inq.type === 'eligibility' ? 'bg-blue-500/10 text-blue-500' : 'bg-green-500/10 text-green-500'}`}>
-                                  {inq.type}
+                                  {inquiryTypeLabel[inq.type] || inq.type}
                                 </span>
                                 {inq.status === 'unread' && <span className="h-2 w-2 rounded-full bg-red-500" />}
                               </div>
@@ -337,7 +546,7 @@ const AdminDashboard = () => {
                               <p className="text-xs text-muted-foreground">{inq.email}</p>
                             </div>
                             <span className="text-[10px] text-muted-foreground">
-                              {new Date(inq.createdAt).toLocaleDateString()}
+                              {inquiryStatusLabel[inq.status] || inq.status}
                             </span>
                           </div>
                         ))
@@ -426,15 +635,21 @@ const AdminDashboard = () => {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center border-b border-border pb-4">
                     <h2 className="font-display text-2xl font-semibold">Edit Page Layouts</h2>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <select
                         value={selectedPageSlug}
-                        onChange={(e) => setSelectedPageSlug(e.target.value)}
+                        onChange={(e) => startTransition(() => setSelectedPageSlug(e.target.value))}
                         className="p-1.5 border border-border bg-surface rounded text-xs focus:outline-none"
                       >
                         <option value="home">Home Page</option>
                         <option value="for-parents">For Parents Center</option>
                       </select>
+                      <button
+                        onClick={addPageSection}
+                        className="inline-flex items-center justify-center rounded border border-border bg-surface px-4 py-1.5 text-xs font-semibold transition hover:border-primary hover:text-primary"
+                      >
+                        <Plus className="mr-1 h-3.5 w-3.5" /> Add Section
+                      </button>
                       <button
                         onClick={savePageContent}
                         className="inline-flex items-center justify-center rounded bg-primary text-white px-4 py-1.5 text-xs font-semibold shadow"
@@ -444,14 +659,74 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
+                  <div className="grid gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm lg:grid-cols-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold uppercase text-muted-foreground">Page Title</label>
+                      <input
+                        type="text"
+                        value={editingPage.title || ''}
+                        onChange={(e) => handlePageFieldChange('title', e.target.value)}
+                        className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold uppercase text-muted-foreground">Description</label>
+                      <input
+                        type="text"
+                        value={editingPage.description || ''}
+                        onChange={(e) => handlePageFieldChange('description', e.target.value)}
+                        className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold uppercase text-muted-foreground">Meta Description</label>
+                      <textarea
+                        value={editingPage.metaDescription || ''}
+                        onChange={(e) => handlePageFieldChange('metaDescription', e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-dashed border-border bg-surface-2/60 px-4 py-3 text-xs text-muted-foreground">
+                    Editing slug <span className="font-semibold text-primary">{selectedPageSlug}</span>. Save to create this page if it does not already exist.
+                  </div>
+
                   {/* Sections List */}
                   <div className="space-y-8">
-                    {editingPage.sections.map((sec, secIdx) => (
-                      <div key={sec._id || sec.sectionId} className="border border-border bg-surface rounded-lg p-6 space-y-4 shadow-sm">
-                        <div className="border-b border-border/60 pb-3 flex justify-between items-center">
-                          <h3 className="font-display text-lg font-bold text-primary capitalize">
-                            Section: {sec.sectionId}
-                          </h3>
+                    {(editingPage.sections || []).map((sec, secIdx) => (
+                      <div key={sec._id || `${sec.sectionId}-${secIdx}`} className="border border-border bg-surface rounded-lg p-6 space-y-4 shadow-sm">
+                        <div className="border-b border-border/60 pb-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold uppercase text-muted-foreground">Section ID</label>
+                              <input
+                                type="text"
+                                value={sec.sectionId || ''}
+                                onChange={(e) => handlePageSectionChange(secIdx, 'sectionId', e.target.value)}
+                                className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold uppercase text-muted-foreground">Visibility</label>
+                              <label className="flex items-center gap-2 rounded border border-border bg-background px-3 py-2 text-xs font-medium">
+                                <input
+                                  type="checkbox"
+                                  checked={sec.isVisible !== false}
+                                  onChange={(e) => handlePageSectionChange(secIdx, 'isVisible', e.target.checked)}
+                                />
+                                Show on site
+                              </label>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removePageSection(secIdx)}
+                            className="inline-flex items-center justify-center gap-1 self-start rounded border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-xs font-semibold text-red-500 transition hover:bg-red-500 hover:text-white"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Remove
+                          </button>
                         </div>
 
                         {/* Title & Subtitle inputs */}
@@ -525,18 +800,32 @@ const AdminDashboard = () => {
                         {sec.items && sec.items.length > 0 && (
                           <div className="space-y-4 pt-4 border-t border-border/60">
                             <h4 className="text-xs font-semibold uppercase text-muted-foreground">Section List Cards ({sec.items.length})</h4>
-                            <div className="grid gap-4 sm:grid-cols-3">
+                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                               {sec.items.map((item, itemIdx) => (
-                                <div key={item._id} className="p-4 border border-border bg-surface-2 rounded-lg space-y-2">
-                                  <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">Card 0{itemIdx + 1}</span>
-                                  <div className="space-y-1">
-                                    <label className="text-[9px] uppercase text-muted-foreground">Title</label>
-                                    <input
-                                      type="text"
-                                      value={item.title || ''}
-                                      onChange={(e) => handlePageItemChange(secIdx, itemIdx, 'title', e.target.value)}
-                                      className="w-full px-2 py-1 border border-border bg-background rounded text-xs focus:outline-none"
-                                    />
+                                <div key={item._id || `${sec.sectionId}-${itemIdx}`} className="p-4 border border-border bg-surface-2 rounded-lg space-y-3">
+                                  <div className="flex items-center justify-between gap-3">
+                                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">Card 0{itemIdx + 1}</span>
+                                    <span className="text-[10px] text-muted-foreground">Layout item</span>
+                                  </div>
+                                  <div className="grid gap-3 sm:grid-cols-2">
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] uppercase text-muted-foreground">Title</label>
+                                      <input
+                                        type="text"
+                                        value={item.title || ''}
+                                        onChange={(e) => handlePageItemChange(secIdx, itemIdx, 'title', e.target.value)}
+                                        className="w-full px-2 py-1 border border-border bg-background rounded text-xs focus:outline-none"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] uppercase text-muted-foreground">Subtitle</label>
+                                      <input
+                                        type="text"
+                                        value={item.subtitle || ''}
+                                        onChange={(e) => handlePageItemChange(secIdx, itemIdx, 'subtitle', e.target.value)}
+                                        className="w-full px-2 py-1 border border-border bg-background rounded text-xs focus:outline-none"
+                                      />
+                                    </div>
                                   </div>
                                   <div className="space-y-1">
                                     <label className="text-[9px] uppercase text-muted-foreground">Description</label>
@@ -546,6 +835,50 @@ const AdminDashboard = () => {
                                       rows={2}
                                       className="w-full px-2 py-1 border border-border bg-background rounded text-xs focus:outline-none"
                                     />
+                                  </div>
+                                  <div className="grid gap-3 sm:grid-cols-2">
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] uppercase text-muted-foreground">Link</label>
+                                      <input
+                                        type="text"
+                                        value={item.link || ''}
+                                        onChange={(e) => handlePageItemChange(secIdx, itemIdx, 'link', e.target.value)}
+                                        className="w-full px-2 py-1 border border-border bg-background rounded text-xs focus:outline-none"
+                                        placeholder="/contact"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] uppercase text-muted-foreground">Image</label>
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="text"
+                                          value={item.image || ''}
+                                          onChange={(e) => handlePageItemChange(secIdx, itemIdx, 'image', e.target.value)}
+                                          className="min-w-0 flex-1 px-2 py-1 border border-border bg-background rounded text-xs focus:outline-none"
+                                          placeholder="https://..."
+                                        />
+                                        <label className="cursor-pointer inline-flex shrink-0 items-center gap-1 rounded border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] font-semibold text-primary transition hover:bg-primary hover:text-white">
+                                          <Upload className="h-3 w-3" /> Upload
+                                          <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                              if (e.target.files[0]) {
+                                                handleImageUpload(secIdx, itemIdx, e.target.files[0]);
+                                              }
+                                            }}
+                                          />
+                                        </label>
+                                      </div>
+                                      {item.image && (
+                                        <img
+                                          src={item.image.startsWith('/uploads') ? `${API_BASE}${item.image}` : item.image}
+                                          alt={item.title || `Section item ${itemIdx + 1}`}
+                                          className="h-16 w-full rounded border border-border object-cover"
+                                        />
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               ))}

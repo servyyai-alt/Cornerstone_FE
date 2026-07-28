@@ -52,6 +52,17 @@ html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   scroll-behavior: smooth;
   transition: background-color 0.3s ease, color 0.3s ease;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  position: relative;
+  background-image:
+    radial-gradient(circle at top left, rgba(var(--primary), 0.08), transparent 28%),
+    radial-gradient(circle at top right, rgba(var(--accent), 0.06), transparent 24%),
+    linear-gradient(180deg, rgba(var(--surface), 0.02), rgba(var(--surface), 0));
 }
 
 /* Custom layout container helper */

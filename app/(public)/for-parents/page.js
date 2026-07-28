@@ -12,7 +12,7 @@ const ForParents = () => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const res = await api.get('/pages/for-parents');
+        const res = await api.get('/pages/for-parents?public=1');
         setPageData(res.data);
       } catch (err) {
         console.error('Error fetching parent center:', err);
@@ -31,7 +31,7 @@ const ForParents = () => {
     );
   }
 
-  const sections = pageData?.sections || [];
+  const sections = (pageData?.sections || []).filter((section) => section.isVisible !== false);
   const getSection = (id) => sections.find(s => s.sectionId === id) || { title: '', subtitle: '', content: '', items: [] };
 
   const hero = getSection('hero');

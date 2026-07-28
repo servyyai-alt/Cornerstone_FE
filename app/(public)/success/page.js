@@ -10,7 +10,7 @@ const Success = () => {
   useEffect(() => {
     const fetchStories = async () => {
       try {
-        const res = await api.get('/success-stories');
+        const res = await api.get('/success-stories?public=1');
         setStories(res.data);
       } catch (err) {
         console.error('Error fetching success stories:', err);

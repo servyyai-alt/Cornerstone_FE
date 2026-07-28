@@ -2,10 +2,11 @@
 
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || '/api').replace(/\/+$/, '');
 
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 15000,
 });
 
 // Request interceptor to attach JWT token

@@ -11,7 +11,7 @@ const Destinations = () => {
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
-        const res = await api.get('/destinations');
+        const res = await api.get('/destinations?public=1');
         setDestinations(res.data);
       } catch (err) {
         console.error('Error fetching destinations:', err);
