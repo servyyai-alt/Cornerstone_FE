@@ -417,15 +417,25 @@ const Contact = () => {
   const [iframeLoading, setIframeLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
-  const demoFormUrl = normalizeMetaUrl(websiteSettings?.demoFormUrl);
-  const showDemoForm = Boolean(demoFormUrl);
+  const enquiryFormUrl = normalizeMetaUrl(websiteSettings?.demoFormUrl);
+  const showEnquiryForm = Boolean(enquiryFormUrl);
   const contactMapSrc = extractMapSrc(contactSettings);
 
   useEffect(() => {
-    if (initialContactSettings && initialWebsiteSettings) {
-      return;
+    if (!showEnquiryForm) {
+      setIframeLoading(false);
+      return undefined;
     }
 
+    setIframeLoading(true);
+    const fallbackTimer = setTimeout(() => {
+      setIframeLoading(false);
+    }, 15000);
+
+    return () => clearTimeout(fallbackTimer);
+  }, [showEnquiryForm, enquiryFormUrl]);
+
+  useEffect(() => {
     let mounted = true;
 
     const loadContactPageData = async () => {
@@ -440,20 +450,10 @@ const Contact = () => {
         setContactSettings(contactRes.data);
         setWebsiteSettings(extractWebsiteSettings(websiteRes));
         setError('');
-
-        if (normalizeMetaUrl(extractWebsiteSettings(websiteRes)?.demoFormUrl)) {
-          setIframeLoading(true);
-          clearTimeout(window.__iframeLoadTimer);
-          window.__iframeLoadTimer = setTimeout(() => {
-            if (mounted) setIframeLoading(false);
-          }, 15000);
-        } else {
-          setIframeLoading(false);
-        }
       } catch (err) {
         if (!mounted) return;
         console.error('Error fetching contact page data:', err);
-        setError('The contact form could not be loaded right now. The fallback form is available below.');
+        setError('The enquiry form could not be loaded right now. The fallback form is available below.');
       } finally {
         if (mounted) {
           setLoading(false);
@@ -467,7 +467,6 @@ const Contact = () => {
     return () => {
       mounted = false;
       clearInterval(intervalId);
-      clearTimeout(window.__iframeLoadTimer);
     };
   }, [initialContactSettings, initialWebsiteSettings]);
 
@@ -512,20 +511,20 @@ const Contact = () => {
               <div className="h-[520px] rounded-2xl bg-surface-2" />
             </div>
           </div>
-        ) : showDemoForm ? (
+        ) : showEnquiryForm ? (
           <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
             <div className="mb-4 flex flex-col gap-2 border-b border-border pb-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Demo lead form</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Enquiry form</p>
                 <h2 className="mt-1 font-display text-2xl">
-                  {websiteSettings?.websiteName ? `${websiteSettings.websiteName} contact form` : 'Embedded lead form'}
+                  {websiteSettings?.websiteName ? `${websiteSettings.websiteName} enquiry form` : 'Embedded enquiry form'}
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   This URL is managed from Website Settings in the admin panel.
                 </p>
               </div>
               <a
-                href={demoFormUrl}
+                href={enquiryFormUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 self-start rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition hover:border-primary"
@@ -548,8 +547,8 @@ const Contact = () => {
                 </div>
               )}
               <iframe
-                src={demoFormUrl}
-                title="Embedded demo lead form"
+                src={enquiryFormUrl}
+                title="Embedded enquiry form"
                 width="100%"
                 height="700"
                 style={{ border: 0, width: '100%', height: 700, display: iframeLoading ? 'none' : 'block' }}
@@ -558,14 +557,14 @@ const Contact = () => {
                 loading="lazy"
                 onLoad={() => setIframeLoading(false)}
                 onError={() => {
-                  setError('The embedded Meta form failed to load. The fallback contact form is shown below.');
+                  setError('The embedded enquiry form failed to load. The fallback contact form is shown below.');
                   setIframeLoading(false);
                 }}
               />
             </div>
 
             <p className="mt-3 text-xs text-muted-foreground">
-              This form is managed from the admin panel. When Website Settings change, the page refreshes automatically.
+              This form is managed from the admin panel. Changes in Website Settings are picked up automatically.
             </p>
           </div>
         ) : (

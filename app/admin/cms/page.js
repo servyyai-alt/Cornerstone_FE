@@ -467,9 +467,9 @@ const AdminCmsStudio = () => {
             <p className="mt-2 text-sm text-muted-foreground">Partnership logos shown across the site.</p>
           </div>
           <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Demo Form</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Enquiry Form</p>
             <p className="mt-3 truncate text-sm font-semibold">{websiteSettings.demoFormUrl || 'Not configured'}</p>
-            <p className="mt-2 text-sm text-muted-foreground">Displayed on the public contact page in an iframe.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Shown on the public contact page and mirrored in the CMS preview.</p>
           </div>
           <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Contact CMS</p>
@@ -953,8 +953,48 @@ const AdminCmsStudio = () => {
                     value={websiteSettings.demoFormUrl || ''}
                     onChange={(e) => setWebsiteSettings({ ...websiteSettings, demoFormUrl: e.target.value })}
                     className="rounded-lg border border-border bg-background px-3 py-2 text-sm lg:col-span-2"
-                    placeholder="Demo form URL"
+                    placeholder="Enquiry form URL"
                   />
+
+                  <div className="rounded-2xl border border-dashed border-border bg-background/60 p-4 lg:col-span-2">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Enquiry form preview</p>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          This preview uses the same saved URL that the public contact page loads.
+                        </p>
+                      </div>
+                      {websiteSettings.demoFormUrl ? (
+                        <a
+                          href={websiteSettings.demoFormUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center rounded-md border border-border bg-surface px-3 py-2 text-xs font-medium transition hover:border-primary"
+                        >
+                          Open form
+                        </a>
+                      ) : null}
+                    </div>
+
+                    {websiteSettings.demoFormUrl ? (
+                      <div className="mt-4 overflow-hidden rounded-xl border border-border bg-surface">
+                        <iframe
+                          src={websiteSettings.demoFormUrl}
+                          title="Enquiry form preview"
+                          width="100%"
+                          height="360"
+                          className="block w-full"
+                          style={{ border: 0 }}
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                        />
+                      </div>
+                    ) : (
+                      <div className="mt-4 rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+                        Add an enquiry form URL to preview the embedded form here.
+                      </div>
+                    )}
+                  </div>
 
                   <div className="grid gap-3 sm:grid-cols-3 lg:col-span-2">
                     {[
@@ -1034,7 +1074,7 @@ const AdminCmsStudio = () => {
                     {saving ? 'Saving...' : 'Save website settings'}
                   </button>
                   <p className="text-xs text-muted-foreground">
-                    The demo form URL appears on the public contact page in an iframe once saved.
+                    The enquiry form URL appears on the public contact page in an iframe once saved.
                   </p>
                 </div>
               </form>

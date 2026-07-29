@@ -77,6 +77,57 @@ const Home = ({ initialData = null }) => {
   const heroCtaSecondaryText = featuredBanner?.button2Text || 'For Parents';
   const heroCtaSecondaryUrl = featuredBanner?.button2Url || '/for-parents';
   const activeLogos = logos.filter((logo) => logo.status === 'active');
+  const propositionItems =
+    proposition.items && proposition.items.length > 0
+      ? proposition.items
+      : [
+          {
+            title: 'Start at home',
+            content:
+              'Begin on a UK-recognised qualification in India - lower risk, lower cost, recognised from year one.',
+          },
+          {
+            title: 'Transfer abroad',
+            content: 'Progress into Year 2 or 3 of a partner university degree overseas once you are ready.',
+          },
+          {
+            title: 'Graduate internationally',
+            content: 'Finish with a globally recognised degree - and start a global career.',
+          },
+        ];
+  const successStoryItems =
+    successStories.length > 0
+      ? successStories.slice(0, 4)
+      : [
+          {
+            initials: 'R.J.',
+            startPoint: 'Chennai, India',
+            pathway: 'Pearson BTEC HND - Year 2 transfer',
+            destination: 'University of Greenwich, UK',
+            outcome: 'Graduated with BSc (Hons) in Business Management.',
+          },
+          {
+            initials: 'S.K.',
+            startPoint: 'Hyderabad, India',
+            pathway: 'ATHE Level 5 - Year 2 transfer',
+            destination: 'RMIT University, Australia',
+            outcome: 'Completed Bachelor of Business and now works at a Melbourne-based analytics firm.',
+          },
+          {
+            initials: 'A.M.',
+            startPoint: 'Mumbai, India',
+            pathway: 'Pearson BTEC HND - Year 2 transfer',
+            destination: 'Birmingham City University, UK',
+            outcome: 'Now pursuing MSc in Finance at a Russell Group university.',
+          },
+          {
+            initials: 'P.D.',
+            startPoint: 'Kerala, India',
+            pathway: 'ATHE Level 5 - Year 3 transfer',
+            destination: 'University of South Australia',
+            outcome: 'Graduated with BSc in IT and is now based in Adelaide with permanent residency.',
+          },
+        ];
 
   const ladderSteps = [
     { title: 'UK Certificate', location: 'India', duration: '8–12 months', body: 'Begin your internationally recognised qualification at home. Adjust to a UK academic style without leaving India.', awarding: 'Pearson / ATHE' },
@@ -182,11 +233,7 @@ const Home = ({ initialData = null }) => {
             </h2>
           </div>
           <div className="grid gap-6 sm:grid-cols-3">
-            {(proposition.items && proposition.items.length > 0 ? proposition.items : [
-              { title: 'Start at home', content: 'Begin on a UK-recognised qualification in India — lower risk, lower cost, recognised from year one.' },
-              { title: 'Transfer abroad', content: 'Progress into Year 2 or 3 of a partner university degree overseas once you are ready.' },
-              { title: 'Graduate internationally', content: 'Finish with a globally recognised degree — and start a global career.' }
-            ]).map((item, idx) => (
+            {propositionItems.map((item, idx) => (
               <div key={idx} className="bg-surface border border-border rounded-xl p-6 hover:border-primary/30 hover:bg-surface-2 transition-all duration-300">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   {idx === 0 && <BookOpen className="h-5 w-5 text-primary" />}
@@ -629,7 +676,7 @@ const Home = ({ initialData = null }) => {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            {successStories.length > 0 ? successStories.slice(0, 4).map((story, idx) => (
+            {successStoryItems.map((story, idx) => (
               <div key={idx} className="border border-border bg-surface rounded-xl p-6 hover:border-primary/30 transition-all duration-300">
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -642,27 +689,7 @@ const Home = ({ initialData = null }) => {
                   </div>
                 </div>
               </div>
-            )) : (
-              [
-                { initials: 'R.J.', startPoint: 'Chennai, India', pathway: 'Pearson BTEC HND — Year 2 transfer', destination: 'University of Greenwich, UK', outcome: 'Graduated with BSc (Hons) in Business Management.' },
-                { initials: 'S.K.', startPoint: 'Hyderabad, India', pathway: 'ATHE Level 5 — Year 2 transfer', destination: 'RMIT University, Australia', outcome: 'Completed Bachelor of Business and now works at a Melbourne-based analytics firm.' },
-                { initials: 'A.M.', startPoint: 'Mumbai, India', pathway: 'Pearson BTEC HND — Year 2 transfer', destination: 'Birmingham City University, UK', outcome: 'Now pursuing MSc in Finance at a Russell Group university.' },
-                { initials: 'P.D.', startPoint: 'Kerala, India', pathway: 'ATHE Level 5 — Year 3 transfer', destination: 'University of South Australia', outcome: 'Graduated with BSc in IT and is now based in Adelaide with permanent residency.' }
-              ].map((story, idx) => (
-                <div key={idx} className="border border-border bg-surface rounded-xl p-6 hover:border-primary/30 transition-all duration-300">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg font-bold text-primary">{story.initials}</span>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-['Fraunces'] text-lg text-foreground mb-1">{story.startPoint}</h3>
-                      <p className="text-xs text-muted-foreground mb-2">{story.pathway} · {story.destination}</p>
-                      <p className="text-sm text-muted-foreground">{story.outcome}</p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+            ))}
           </div>
           <div className="text-center mt-6 sm:hidden">
             <Link href="/success" className="text-primary text-sm font-medium hover:underline underline-offset-4">
@@ -677,3 +704,5 @@ const Home = ({ initialData = null }) => {
 
 export default Home;
       
+
+
