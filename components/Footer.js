@@ -1,6 +1,14 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-const Footer = () => {
+const normalizeLogoList = (logos = []) =>
+  logos
+    .filter((logo) => logo && logo.status === 'active' && logo.logoImage)
+    .slice(0, 6);
+
+const Footer = ({ logos = [] }) => {
+  const activeLogos = normalizeLogoList(logos);
+
   return (
     <footer className="border-t border-border bg-surface mt-auto">
       <div className="container-prose py-16">
@@ -76,12 +84,51 @@ const Footer = () => {
         <div className="mt-14 border-t border-border pt-10">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">In partnership with recognised UK awarding organisations</p>
           <div className="mt-4 flex flex-wrap items-center gap-4">
-            <div className="inline-flex h-11 items-center rounded-md bg-white px-4 py-2 ring-1 ring-border/60">
-              <span className="font-semibold text-lg text-[#003B46]">Pearson</span>
-            </div>
-            <div className="inline-flex h-11 items-center rounded-md bg-white px-4 py-2 ring-1 ring-border/60">
-              <span className="font-semibold text-lg text-[#0F2A4A]">ATHE</span>
-            </div>
+            {activeLogos.length > 0 ? (
+              activeLogos.map((logo) => {
+                const logoNode = (
+                  <span className="inline-flex h-11 items-center justify-center rounded-md bg-white px-4 py-2 ring-1 ring-border/60 transition-transform duration-200 hover:-translate-y-0.5">
+                    <Image
+                      src={logo.logoImage}
+                      alt={logo.altText || logo.companyName || 'Awarding body logo'}
+                      width={140}
+                      height={44}
+                      className="h-7 w-auto object-contain"
+                      sizes="140px"
+                    />
+                  </span>
+                );
+
+                if (logo.websiteUrl) {
+                  return (
+                    <Link
+                      key={logo._id || logo.logoImage}
+                      href={logo.websiteUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={logo.companyName || 'Awarding body'}
+                    >
+                      {logoNode}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <div key={logo._id || logo.logoImage}>
+                    {logoNode}
+                  </div>
+                );
+              })
+            ) : (
+              <>
+                <div className="inline-flex h-11 items-center rounded-md bg-white px-4 py-2 ring-1 ring-border/60">
+                  <span className="font-semibold text-lg text-[#003B46]">Pearson</span>
+                </div>
+                <div className="inline-flex h-11 items-center rounded-md bg-white px-4 py-2 ring-1 ring-border/60">
+                  <span className="font-semibold text-lg text-[#0F2A4A]">ATHE</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

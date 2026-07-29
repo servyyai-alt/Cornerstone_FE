@@ -3,12 +3,19 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import { Compass, GraduationCap, DollarSign, Heart } from 'lucide-react';
+import { useRouteData } from '../route-data-context';
 
 const Destinations = () => {
-  const [destinations, setDestinations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const routeData = useRouteData();
+  const initialDestinations = Array.isArray(routeData?.destinations) ? routeData.destinations : [];
+  const [destinations, setDestinations] = useState(initialDestinations);
+  const [loading, setLoading] = useState(initialDestinations.length === 0);
 
   useEffect(() => {
+    if (initialDestinations.length > 0) {
+      return;
+    }
+
     const fetchDestinations = async () => {
       try {
         const res = await api.get('/destinations?public=1');
@@ -20,7 +27,7 @@ const Destinations = () => {
       }
     };
     fetchDestinations();
-  }, []);
+  }, [initialDestinations.length]);
 
   if (loading) {
     return (

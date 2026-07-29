@@ -328,6 +328,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../../services/api';
 import { CheckCircle, ExternalLink, Mail, Phone } from 'lucide-react';
+import { useRouteData } from '../route-data-context';
 
 // Accepts a URL that may be missing its protocol (e.g. "www.example.com/..."
 // or "example.com/...") and normalizes it to a valid https URL. Returns null
@@ -402,14 +403,17 @@ const extractMapSrc = (contactSettings) => {
 };
 
 const Contact = () => {
+  const routeData = useRouteData();
+  const initialContactSettings = routeData?.contactSettings || null;
+  const initialWebsiteSettings = routeData?.websiteSettings || null;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [preferredIntake, setPreferredIntake] = useState('July (Main Intake)');
-  const [contactSettings, setContactSettings] = useState(null);
-  const [websiteSettings, setWebsiteSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [contactSettings, setContactSettings] = useState(initialContactSettings);
+  const [websiteSettings, setWebsiteSettings] = useState(initialWebsiteSettings);
+  const [loading, setLoading] = useState(!initialContactSettings || !initialWebsiteSettings);
   const [iframeLoading, setIframeLoading] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -418,6 +422,10 @@ const Contact = () => {
   const contactMapSrc = extractMapSrc(contactSettings);
 
   useEffect(() => {
+    if (initialContactSettings && initialWebsiteSettings) {
+      return;
+    }
+
     let mounted = true;
 
     const loadContactPageData = async () => {
@@ -461,7 +469,7 @@ const Contact = () => {
       clearInterval(intervalId);
       clearTimeout(window.__iframeLoadTimer);
     };
-  }, []);
+  }, [initialContactSettings, initialWebsiteSettings]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

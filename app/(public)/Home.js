@@ -6,51 +6,43 @@ import Image from 'next/image';
 import api from '../../services/api';
 import { ArrowRight, Check, BookOpen, Users, Award, Globe } from 'lucide-react';
 
-const Home = () => {
-  const [pageData, setPageData] = useState(null);
-  const [banners, setBanners] = useState([]);
-  const [logos, setLogos] = useState([]);
-  const [universities, setUniversities] = useState([]);
-  const [destinations, setDestinations] = useState([]);
-  const [successStories, setSuccessStories] = useState([]);
-  const [loading, setLoading] = useState(true);
+const normalizeHomepageData = (payload) => ({
+  pageData: payload?.pageData || null,
+  banners: Array.isArray(payload?.banners) ? payload.banners : [],
+  logos: Array.isArray(payload?.logos) ? payload.logos : [],
+  universities: Array.isArray(payload?.universities) ? payload.universities : [],
+  destinations: Array.isArray(payload?.destinations) ? payload.destinations : [],
+  successStories: Array.isArray(payload?.successStories) ? payload.successStories : [],
+});
+
+const Home = ({ initialData = null }) => {
+  const homepageData = normalizeHomepageData(initialData);
+  const [pageData, setPageData] = useState(homepageData.pageData);
+  const [banners, setBanners] = useState(homepageData.banners);
+  const [logos, setLogos] = useState(homepageData.logos);
+  const [universities, setUniversities] = useState(homepageData.universities);
+  const [destinations, setDestinations] = useState(homepageData.destinations);
+  const [successStories, setSuccessStories] = useState(homepageData.successStories);
+  const [loading, setLoading] = useState(!initialData);
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
+    if (initialData) {
+      setLoading(false);
+      return;
+    }
+
     const fetchHomeContent = async () => {
       try {
-        const [pageRes, bannersRes, logosRes, universitiesRes, destinationsRes, storiesRes] = await Promise.allSettled([
-          api.get('/pages/home?public=1'),
-          api.get('/banners?public=1'),
-          api.get('/logos?public=1'),
-          api.get('/universities?public=1'),
-          api.get('/destinations?public=1'),
-          api.get('/success-stories?public=1'),
-        ]);
+        const res = await api.get('/homepage?public=1');
+        const normalized = normalizeHomepageData(res.data);
 
-        if (pageRes.status === 'fulfilled') {
-          setPageData(pageRes.value.data);
-        }
-
-        if (bannersRes.status === 'fulfilled') {
-          setBanners(Array.isArray(bannersRes.value.data) ? bannersRes.value.data : []);
-        }
-
-        if (logosRes.status === 'fulfilled') {
-          setLogos(Array.isArray(logosRes.value.data) ? logosRes.value.data : []);
-        }
-
-        if (universitiesRes.status === 'fulfilled') {
-          setUniversities(universitiesRes.value.data || []);
-        }
-
-        if (destinationsRes.status === 'fulfilled') {
-          setDestinations(destinationsRes.value.data || []);
-        }
-
-        if (storiesRes.status === 'fulfilled') {
-          setSuccessStories(storiesRes.value.data || []);
-        }
+        setPageData(normalized.pageData);
+        setBanners(normalized.banners);
+        setLogos(normalized.logos);
+        setUniversities(normalized.universities);
+        setDestinations(normalized.destinations);
+        setSuccessStories(normalized.successStories);
       } catch (err) {
         console.error('Error fetching home content:', err);
       } finally {
@@ -58,7 +50,7 @@ const Home = () => {
       }
     };
     fetchHomeContent();
-  }, []);
+  }, [initialData]);
 
   if (loading) {
     return (

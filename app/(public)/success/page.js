@@ -2,12 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import api from '../../../services/api';
+import { useRouteData } from '../route-data-context';
 
 const Success = () => {
-  const [stories, setStories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const routeData = useRouteData();
+  const initialStories = Array.isArray(routeData?.stories) ? routeData.stories : [];
+  const [stories, setStories] = useState(initialStories);
+  const [loading, setLoading] = useState(initialStories.length === 0);
 
   useEffect(() => {
+    if (initialStories.length > 0) {
+      return;
+    }
+
     const fetchStories = async () => {
       try {
         const res = await api.get('/success-stories?public=1');
@@ -19,7 +26,7 @@ const Success = () => {
       }
     };
     fetchStories();
-  }, []);
+  }, [initialStories.length]);
 
   if (loading) {
     return (

@@ -4,12 +4,19 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import api from '../../../services/api';
 import { ShieldCheck, CalendarRange, LineChart, Users } from 'lucide-react';
+import { useRouteData } from '../route-data-context';
 
 const ForParents = () => {
-  const [pageData, setPageData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const routeData = useRouteData();
+  const initialPageData = routeData?.pageData || null;
+  const [pageData, setPageData] = useState(initialPageData);
+  const [loading, setLoading] = useState(!initialPageData);
 
   useEffect(() => {
+    if (initialPageData) {
+      return;
+    }
+
     const fetchContent = async () => {
       try {
         const res = await api.get('/pages/for-parents?public=1');
@@ -21,7 +28,7 @@ const ForParents = () => {
       }
     };
     fetchContent();
-  }, []);
+  }, [initialPageData]);
 
   if (loading) {
     return (

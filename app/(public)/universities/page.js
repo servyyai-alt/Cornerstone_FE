@@ -3,11 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import { Search, SlidersHorizontal, BookOpen, GraduationCap, X } from 'lucide-react';
+import { useRouteData } from '../route-data-context';
 
 const Universities = () => {
-  const [universities, setUniversities] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const routeData = useRouteData();
+  const initialUniversities = Array.isArray(routeData?.universities) ? routeData.universities : [];
+  const [universities, setUniversities] = useState(initialUniversities);
+  const [filtered, setFiltered] = useState(initialUniversities);
+  const [loading, setLoading] = useState(initialUniversities.length === 0);
 
   // Filter States
   const [search, setSearch] = useState('');
@@ -21,6 +24,10 @@ const Universities = () => {
   const [selectedUni, setSelectedUni] = useState(null);
 
   useEffect(() => {
+    if (initialUniversities.length > 0) {
+      return;
+    }
+
     const fetchUniversities = async () => {
       try {
         const res = await api.get('/universities?public=1');
@@ -33,7 +40,7 @@ const Universities = () => {
       }
     };
     fetchUniversities();
-  }, []);
+  }, [initialUniversities.length]);
 
   // Handle Filtering
   useEffect(() => {
