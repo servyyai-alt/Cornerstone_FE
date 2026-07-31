@@ -5,6 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../services/auth';
 import api from '../../../services/api';
+import AdminDialog from '../../../components/admin/AdminDialog';
+import { useAdminFeedback } from '../../../components/admin/AdminFeedbackProvider';
+import {
+  validatePageDraft,
+  validateStoryForm,
+  validateUniversityForm,
+} from '../../../lib/adminValidation';
 import {
   Inbox, FileText, GraduationCap, Compass, Sparkles, LogOut,
   Trash2, Edit, Plus, Check, RefreshCw, Upload, Eye
@@ -13,7 +20,7 @@ import {
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
 
 const createEmptySection = () => ({
-  sectionId: 'hero',
+  sectionId: 'intro',
   title: '',
   subtitle: '',
   content: '',
@@ -21,6 +28,14 @@ const createEmptySection = () => ({
   isVisible: true,
   items: [],
 });
+
+const normalizeSection = (section) => {
+  if (!section) return section;
+
+  return String(section.sectionId || '').trim() === 'hero'
+    ? { ...section, sectionId: 'intro' }
+    : section;
+};
 
 const titleizeSlug = (slug = '') =>
   slug
@@ -49,7 +64,9 @@ const normalizePageDraft = (page, slug) => {
     title: page?.title || fallback.title,
     description: page?.description || fallback.description,
     metaDescription: page?.metaDescription || fallback.metaDescription,
-    sections: Array.isArray(page?.sections) && page.sections.length > 0 ? page.sections : fallback.sections,
+    sections: Array.isArray(page?.sections) && page.sections.length > 0
+      ? page.sections.map(normalizeSection)
+      : fallback.sections,
   };
 };
 
@@ -68,6 +85,7 @@ const inquiryStatusLabel = {
 
 const AdminDashboard = () => {
   const { user, logout, loading: authLoading } = useAuth();
+  const { notify, confirm } = useAdminFeedback();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState('inquiries');
@@ -104,6 +122,25 @@ const AdminDashboard = () => {
   const [storyForm, setStoryForm] = useState({
     initials: '', startPoint: '', pathway: '', destination: '', outcome: ''
   });
+
+  const closeUniversityModal = () => {
+    setUniFormOpen(false);
+    setEditingUni(null);
+  };
+
+  const closeStoryModal = () => {
+    setStoryFormOpen(false);
+    setEditingStory(null);
+  };
+
+  const notifyFirstError = (title, errors) => {
+    if (errors.length === 0) {
+      return false;
+    }
+
+    notify(errors[0], { tone: 'error', title });
+    return true;
+  };
 
   // Redirect if not logged in
   useEffect(() => {
@@ -185,25 +222,55 @@ const AdminDashboard = () => {
       await api.put(`/inquiries/${id}`, { status });
       setInquiries((prev) => prev.map((i) => (i._id === id ? { ...i, status } : i)));
       setSelectedInquiry((current) => (current?._id === id ? { ...current, status } : current));
+      notify(`Lead marked as ${status}.`, {
+        tone: 'success',
+        title: 'Lead updated',
+      });
     } catch (err) {
       console.error('Error updating status:', err);
+      notify(err.response?.data?.message || 'Unable to update lead status.', {
+        tone: 'error',
+        title: 'Status update failed',
+      });
     }
   };
 
   const deleteInquiry = async (id) => {
-    if (!window.confirm('Delete this inquiry?')) return;
+    const confirmed = await confirm({
+      title: 'Delete this inquiry?',
+      description: 'This will permanently remove the lead from the inbox and cannot be undone.',
+      confirmLabel: 'Delete lead',
+      cancelLabel: 'Keep lead',
+      tone: 'error',
+    });
+
+    if (!confirmed) return;
+
     try {
       await api.delete(`/inquiries/${id}`);
       setInquiries((prev) => prev.filter((i) => i._id !== id));
       setSelectedInquiry((current) => (current?._id === id ? null : current));
+      notify('The inquiry was deleted successfully.', {
+        tone: 'success',
+        title: 'Lead deleted',
+      });
     } catch (err) {
       console.error('Error deleting inquiry:', err);
+      notify(err.response?.data?.message || 'Unable to delete this inquiry.', {
+        tone: 'error',
+        title: 'Delete failed',
+      });
     }
   };
 
   // University CRUD
   const saveUniversity = async (e) => {
     e.preventDefault();
+    const validationErrors = validateUniversityForm(uniForm);
+    if (notifyFirstError('Fix the university form', validationErrors)) {
+      return;
+    }
+
     const data = {
       ...uniForm,
       subjects: typeof uniForm.subjects === 'string' ? uniForm.subjects.split(',').map(s => s.trim()) : uniForm.subjects
@@ -217,26 +284,55 @@ const AdminDashboard = () => {
         const res = await api.post('/universities', data);
         setUniversities((prev) => [...prev, res.data.university]);
       }
-      setUniFormOpen(false);
-      setEditingUni(null);
+      closeUniversityModal();
+      notify('University saved successfully.', {
+        tone: 'success',
+        title: editingUni ? 'University updated' : 'University created',
+      });
     } catch (err) {
       console.error('Error saving university:', err);
+      notify(err.response?.data?.message || 'Unable to save university.', {
+        tone: 'error',
+        title: 'University save failed',
+      });
     }
   };
 
   const deleteUniversity = async (id) => {
-    if (!window.confirm('Delete this university?')) return;
+    const confirmed = await confirm({
+      title: 'Delete this university?',
+      description: 'The university entry will be removed from the explorer and CMS list.',
+      confirmLabel: 'Delete university',
+      cancelLabel: 'Keep university',
+      tone: 'error',
+    });
+
+    if (!confirmed) return;
+
     try {
       await api.delete(`/universities/${id}`);
       setUniversities((prev) => prev.filter((u) => u._id !== id));
+      notify('University deleted successfully.', {
+        tone: 'success',
+        title: 'University deleted',
+      });
     } catch (err) {
       console.error('Error deleting university:', err);
+      notify(err.response?.data?.message || 'Unable to delete university.', {
+        tone: 'error',
+        title: 'Delete failed',
+      });
     }
   };
 
   // Success Story CRUD
   const saveStory = async (e) => {
     e.preventDefault();
+    const validationErrors = validateStoryForm(storyForm);
+    if (notifyFirstError('Fix the story form', validationErrors)) {
+      return;
+    }
+
     try {
       if (editingStory) {
         const res = await api.put(`/success-stories/${editingStory._id}`, storyForm);
@@ -245,20 +341,44 @@ const AdminDashboard = () => {
         const res = await api.post('/success-stories', storyForm);
         setStories((prev) => [...prev, res.data.story]);
       }
-      setStoryFormOpen(false);
-      setEditingStory(null);
+      closeStoryModal();
+      notify('Student journey saved successfully.', {
+        tone: 'success',
+        title: editingStory ? 'Story updated' : 'Story created',
+      });
     } catch (err) {
       console.error('Error saving success story:', err);
+      notify(err.response?.data?.message || 'Unable to save success story.', {
+        tone: 'error',
+        title: 'Story save failed',
+      });
     }
   };
 
   const deleteStory = async (id) => {
-    if (!window.confirm('Delete this success story?')) return;
+    const confirmed = await confirm({
+      title: 'Delete this success story?',
+      description: 'This story will be removed from the public success page and CMS.',
+      confirmLabel: 'Delete story',
+      cancelLabel: 'Keep story',
+      tone: 'error',
+    });
+
+    if (!confirmed) return;
+
     try {
       await api.delete(`/success-stories/${id}`);
       setStories((prev) => prev.filter((s) => s._id !== id));
+      notify('Success story deleted successfully.', {
+        tone: 'success',
+        title: 'Story deleted',
+      });
     } catch (err) {
       console.error('Error deleting success story:', err);
+      notify(err.response?.data?.message || 'Unable to delete success story.', {
+        tone: 'error',
+        title: 'Delete failed',
+      });
     }
   };
 
@@ -321,14 +441,27 @@ const AdminDashboard = () => {
   };
 
   const removePageSection = (sectionIdx) => {
-    if (!window.confirm('Remove this section from the page?')) return;
+    confirm({
+      title: 'Remove this section?',
+      description: 'This section will be removed from the draft. You can add it again later.',
+      confirmLabel: 'Remove section',
+      cancelLabel: 'Keep section',
+      tone: 'error',
+    }).then((confirmed) => {
+      if (!confirmed) return;
 
-    setEditingPage((current) => {
-      if (!current) return current;
+      setEditingPage((current) => {
+        if (!current) return current;
 
-      const sections = [...(current.sections || [])];
-      sections.splice(sectionIdx, 1);
-      return { ...current, sections };
+        const sections = [...(current.sections || [])];
+        sections.splice(sectionIdx, 1);
+        return { ...current, sections };
+      });
+
+      notify('Section removed from the page draft.', {
+        tone: 'success',
+        title: 'Section removed',
+      });
     });
   };
 
@@ -347,15 +480,26 @@ const AdminDashboard = () => {
       } else {
         handlePageItemChange(sectionIdx, itemIdx, 'image', fileUrl);
       }
-      alert('Image uploaded successfully!');
+      notify('Image uploaded successfully.', {
+        tone: 'success',
+        title: 'Upload complete',
+      });
     } catch (err) {
       console.error('Upload failed:', err);
-      alert('Upload failed: ' + (err.response?.data?.message || 'Server error'));
+      notify(err.response?.data?.message || 'Upload failed. Please try again.', {
+        tone: 'error',
+        title: 'Upload failed',
+      });
     }
   };
 
   const savePageContent = async () => {
     if (!editingPage) return;
+
+    const validationErrors = validatePageDraft(editingPage);
+    if (notifyFirstError('Fix the page draft', validationErrors)) {
+      return;
+    }
 
     try {
       const payload = {
@@ -365,10 +509,16 @@ const AdminDashboard = () => {
 
       await api.put(`/pages/${selectedPageSlug}`, payload);
       await loadPageContent(selectedPageSlug);
-      alert('Page content updated successfully!');
+      notify('Page content updated successfully.', {
+        tone: 'success',
+        title: 'Page saved',
+      });
     } catch (err) {
       console.error('Error saving page changes:', err);
-      alert('Failed to save page changes.');
+      notify(err.response?.data?.message || 'Failed to save page changes.', {
+        tone: 'error',
+        title: 'Page save failed',
+      });
     }
   };
 
@@ -913,12 +1063,14 @@ const AdminDashboard = () => {
                   </div>
 
                   {/* Form Modal for Add/Edit */}
-                  {uniFormOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                      <form onSubmit={saveUniversity} className="w-full max-w-lg rounded-xl border border-border bg-surface p-6 shadow-2xl space-y-4">
-                        <h3 className="font-display text-xl border-b border-border pb-2">
-                          {editingUni ? 'Edit University details' : 'Add New Progression Partner'}
-                        </h3>
+                  <AdminDialog
+                    open={uniFormOpen}
+                    title={editingUni ? 'Edit University details' : 'Add New Progression Partner'}
+                    description="Update the university record and save it back to the CMS."
+                    onClose={closeUniversityModal}
+                    maxWidth="max-w-2xl"
+                  >
+                    <form onSubmit={saveUniversity} className="space-y-4">
 
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="space-y-1">
@@ -1006,7 +1158,7 @@ const AdminDashboard = () => {
                         <div className="flex gap-2 justify-end pt-4 border-t border-border">
                           <button 
                             type="button" 
-                            onClick={() => setUniFormOpen(false)}
+                            onClick={closeUniversityModal}
                             className="px-4 py-1.5 rounded border border-border hover:bg-surface-2 text-xs font-semibold"
                           >
                             Cancel
@@ -1019,8 +1171,7 @@ const AdminDashboard = () => {
                           </button>
                         </div>
                       </form>
-                    </div>
-                  )}
+                  </AdminDialog>
 
                   {/* Universities Table */}
                   <div className="border border-border rounded-lg bg-surface overflow-hidden">
@@ -1049,7 +1200,9 @@ const AdminDashboard = () => {
                                   setEditingUni(uni);
                                   setUniForm({
                                     ...uni,
-                                    subjects: uni.subjects.join(', ')
+                                    subjects: Array.isArray(uni.subjects)
+                                      ? uni.subjects.join(', ')
+                                      : String(uni.subjects || '')
                                   });
                                   setUniFormOpen(true);
                                 }}
@@ -1090,12 +1243,14 @@ const AdminDashboard = () => {
                   </div>
 
                   {/* Story Form Modal */}
-                  {storyFormOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                      <form onSubmit={saveStory} className="w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-2xl space-y-4">
-                        <h3 className="font-display text-xl border-b border-border pb-2">
-                          {editingStory ? 'Edit Story details' : 'Add New Student Journey'}
-                        </h3>
+                  <AdminDialog
+                    open={storyFormOpen}
+                    title={editingStory ? 'Edit Story details' : 'Add New Student Journey'}
+                    description="Capture a student journey that can be displayed on the public success page."
+                    onClose={closeStoryModal}
+                    maxWidth="max-w-xl"
+                  >
+                    <form onSubmit={saveStory} className="space-y-4">
 
                         <div className="grid gap-4 sm:grid-cols-2">
                           <div className="space-y-1">
@@ -1152,7 +1307,7 @@ const AdminDashboard = () => {
                         <div className="flex gap-2 justify-end pt-4 border-t border-border">
                           <button 
                             type="button" 
-                            onClick={() => setStoryFormOpen(false)}
+                            onClick={closeStoryModal}
                             className="px-4 py-1.5 rounded border border-border hover:bg-surface-2 text-xs font-semibold"
                           >
                             Cancel
@@ -1165,8 +1320,7 @@ const AdminDashboard = () => {
                           </button>
                         </div>
                       </form>
-                    </div>
-                  )}
+                  </AdminDialog>
 
                   {/* Stories list */}
                   <div className="grid gap-4 sm:grid-cols-2">

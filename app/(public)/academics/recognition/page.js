@@ -1,4 +1,17 @@
 import { ArrowRight, Info, HelpCircle, CheckCircle, ShieldCheck } from 'lucide-react';
+import { createPageMetadata, getSeoPageOverrides } from '../../../../lib/seo';
+
+export async function generateMetadata() {
+  const seoPage = await getSeoPageOverrides('academics-recognition');
+
+  return createPageMetadata({
+    title: 'Recognition & Awarding Bodies',
+    description: 'Learn how Cornerstone qualifications are recognised and regulated.',
+    path: '/academics/recognition',
+    keywords: ['recognition', 'awarding bodies', 'Ofqual'],
+    seoPage,
+  });
+}
 
 const Recognition = () => {
   return (

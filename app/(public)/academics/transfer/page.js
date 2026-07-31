@@ -1,4 +1,17 @@
 import { ArrowRight, Info, HelpCircle, CheckCircle, ShieldCheck } from 'lucide-react';
+import { createPageMetadata, getSeoPageOverrides } from '../../../../lib/seo';
+
+export async function generateMetadata() {
+  const seoPage = await getSeoPageOverrides('academics-transfer');
+
+  return createPageMetadata({
+    title: 'Credit Transfer',
+    description: 'See how credit transfer and advanced standing work within the Cornerstone pathway.',
+    path: '/academics/transfer',
+    keywords: ['credit transfer', 'advanced standing', 'RQF credits'],
+    seoPage,
+  });
+}
 
 const Transfer = () => {
   return (

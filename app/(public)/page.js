@@ -1,4 +1,5 @@
 import Home from './Home';
+import { createPageMetadata, getSeoPageOverrides, siteConfig } from '../../lib/seo';
 
 export const revalidate = 60;
 
@@ -26,6 +27,31 @@ async function getHomepageData() {
     console.error('Error loading homepage data on the server:', error);
     return null;
   }
+}
+
+export async function generateMetadata() {
+  const [homepageData, seoPage] = await Promise.all([
+    getHomepageData(),
+    getSeoPageOverrides('home'),
+  ]);
+
+  const pageData = homepageData?.pageData || null;
+  const heroSection = Array.isArray(pageData?.sections)
+    ? pageData.sections.find((section) => section.sectionId === 'hero')
+    : null;
+
+  return createPageMetadata({
+    title: pageData?.title || siteConfig.name,
+    description:
+      seoPage?.metaDescription ||
+      pageData?.metaDescription ||
+      pageData?.description ||
+      heroSection?.subtitle ||
+      siteConfig.description,
+    path: '/',
+    keywords: ['international pathway college', 'study abroad', 'credit transfer', 'UK degree'],
+    seoPage,
+  });
 }
 
 export default async function Page() {

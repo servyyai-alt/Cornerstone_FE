@@ -1,5 +1,18 @@
 import Link from 'next/link';
 import { ArrowRight, MessageSquare, Award, ClipboardCheck, Wallet, DoorOpen } from 'lucide-react';
+import { createPageMetadata, getSeoPageOverrides } from '../../../lib/seo';
+
+export async function generateMetadata() {
+  const seoPage = await getSeoPageOverrides('admissions');
+
+  return createPageMetadata({
+    title: 'Admissions Process',
+    description: 'See how the Cornerstone admissions journey works from consultation to enrolment.',
+    path: '/admissions',
+    keywords: ['admissions process', 'eligibility', 'enrolment'],
+    seoPage,
+  });
+}
 
 const Admissions = () => {
   const steps = [

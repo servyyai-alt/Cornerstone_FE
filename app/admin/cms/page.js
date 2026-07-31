@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../../services/auth';
 import api from '../../../services/api';
+import { useAdminFeedback } from '../../../components/admin/AdminFeedbackProvider';
+import {
+  validateBannerForm,
+  validateContactSettings,
+  validateLogoForm,
+  validateWebsiteSettings,
+} from '../../../lib/adminValidation';
 import {
   ArrowLeft,
   Image as ImageIcon,
@@ -172,6 +179,7 @@ const compressImage = (file, maxWidth = 1600, quality = 0.82) =>
 const AdminCmsStudio = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { notify, confirm } = useAdminFeedback();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -226,6 +234,16 @@ const AdminCmsStudio = () => {
     }
   }, [user]);
 
+  const notifyFirstError = (title, errors) => {
+    if (!errors.length) return false;
+
+    notify(errors[0], {
+      tone: 'error',
+      title,
+    });
+    return true;
+  };
+
   const handleLogout = () => {
     logout();
     router.push('/admin/login');
@@ -250,14 +268,26 @@ const AdminCmsStudio = () => {
     try {
       const url = await uploadAsset(file);
       onSuccess(url);
+      notify(`${contextLabel} uploaded successfully.`, {
+        tone: 'success',
+        title: 'Upload complete',
+      });
     } catch (err) {
       console.error(`Failed to upload ${contextLabel}:`, err);
-      alert(err?.response?.data?.message || `Unable to upload ${contextLabel}`);
+      notify(err?.response?.data?.message || `Unable to upload ${contextLabel}.`, {
+        tone: 'error',
+        title: 'Upload failed',
+      });
     }
   };
 
   const saveBanner = async (e) => {
     e.preventDefault();
+    const validationErrors = validateBannerForm(bannerForm);
+    if (notifyFirstError('Fix the banner form', validationErrors)) {
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = {
@@ -275,9 +305,16 @@ const AdminCmsStudio = () => {
       setBannerForm(emptyBanner);
       setEditingBannerId(null);
       await loadData();
+      notify('Banner saved successfully.', {
+        tone: 'success',
+        title: editingBannerId ? 'Banner updated' : 'Banner created',
+      });
     } catch (err) {
       console.error('Failed to save banner:', err);
-      alert(err.response?.data?.message || 'Unable to save banner');
+      notify(err.response?.data?.message || 'Unable to save banner.', {
+        tone: 'error',
+        title: 'Banner save failed',
+      });
     } finally {
       setSaving(false);
     }
@@ -285,6 +322,11 @@ const AdminCmsStudio = () => {
 
   const saveLogo = async (e) => {
     e.preventDefault();
+    const validationErrors = validateLogoForm(logoForm);
+    if (notifyFirstError('Fix the logo form', validationErrors)) {
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = {
@@ -302,9 +344,16 @@ const AdminCmsStudio = () => {
       setLogoForm(emptyLogo);
       setEditingLogoId(null);
       await loadData();
+      notify('Logo saved successfully.', {
+        tone: 'success',
+        title: editingLogoId ? 'Logo updated' : 'Logo created',
+      });
     } catch (err) {
       console.error('Failed to save logo:', err);
-      alert(err.response?.data?.message || 'Unable to save logo');
+      notify(err.response?.data?.message || 'Unable to save logo.', {
+        tone: 'error',
+        title: 'Logo save failed',
+      });
     } finally {
       setSaving(false);
     }
@@ -312,14 +361,25 @@ const AdminCmsStudio = () => {
 
   const saveWebsite = async (e) => {
     e.preventDefault();
+    const validationErrors = validateWebsiteSettings(websiteSettings);
+    if (notifyFirstError('Fix the website settings', validationErrors)) {
+      return;
+    }
+
     setSaving(true);
     try {
       await api.put('/settings/website', websiteSettings);
       await loadData();
-      alert('Website settings saved');
+      notify('Website settings saved successfully.', {
+        tone: 'success',
+        title: 'Website updated',
+      });
     } catch (err) {
       console.error('Failed to save website settings:', err);
-      alert(err.response?.data?.message || 'Unable to save website settings');
+      notify(err.response?.data?.message || 'Unable to save website settings.', {
+        tone: 'error',
+        title: 'Website save failed',
+      });
     } finally {
       setSaving(false);
     }
@@ -327,6 +387,11 @@ const AdminCmsStudio = () => {
 
   const saveContact = async (e) => {
     e.preventDefault();
+    const validationErrors = validateContactSettings(contactSettings);
+    if (notifyFirstError('Fix the contact settings', validationErrors)) {
+      return;
+    }
+
     setSaving(true);
     try {
       const normalized = {
@@ -341,38 +406,76 @@ const AdminCmsStudio = () => {
 
       await api.put('/settings/contact', normalized);
       await loadData();
-      alert('Contact settings saved');
+      notify('Contact settings saved successfully.', {
+        tone: 'success',
+        title: 'Contact updated',
+      });
     } catch (err) {
       console.error('Failed to save contact settings:', err);
-      alert(err.response?.data?.message || 'Unable to save contact settings');
+      notify(err.response?.data?.message || 'Unable to save contact settings.', {
+        tone: 'error',
+        title: 'Contact save failed',
+      });
     } finally {
       setSaving(false);
     }
   };
 
   const deleteBanner = async (id) => {
-    if (!window.confirm('Delete this banner?')) return;
+    const confirmed = await confirm({
+      title: 'Delete this banner?',
+      description: 'This will permanently remove the banner from the CMS and public site.',
+      confirmLabel: 'Delete banner',
+      cancelLabel: 'Keep banner',
+      tone: 'error',
+    });
+
+    if (!confirmed) return;
+
     setSaving(true);
     try {
       await api.delete(`/banners/${id}`);
       await loadData();
+      notify('Banner deleted successfully.', {
+        tone: 'success',
+        title: 'Banner deleted',
+      });
     } catch (err) {
       console.error('Failed to delete banner:', err);
-      alert(err.response?.data?.message || 'Unable to delete banner');
+      notify(err.response?.data?.message || 'Unable to delete banner.', {
+        tone: 'error',
+        title: 'Delete failed',
+      });
     } finally {
       setSaving(false);
     }
   };
 
   const deleteLogo = async (id) => {
-    if (!window.confirm('Delete this logo?')) return;
+    const confirmed = await confirm({
+      title: 'Delete this logo?',
+      description: 'This will remove the logo from the partner list and CMS.',
+      confirmLabel: 'Delete logo',
+      cancelLabel: 'Keep logo',
+      tone: 'error',
+    });
+
+    if (!confirmed) return;
+
     setSaving(true);
     try {
       await api.delete(`/logos/${id}`);
       await loadData();
+      notify('Logo deleted successfully.', {
+        tone: 'success',
+        title: 'Logo deleted',
+      });
     } catch (err) {
       console.error('Failed to delete logo:', err);
-      alert(err.response?.data?.message || 'Unable to delete logo');
+      notify(err.response?.data?.message || 'Unable to delete logo.', {
+        tone: 'error',
+        title: 'Delete failed',
+      });
     } finally {
       setSaving(false);
     }
@@ -394,9 +497,16 @@ const AdminCmsStudio = () => {
     try {
       await api.put(endpoint, { ids });
       await loadData();
+      notify('Collection order updated.', {
+        tone: 'success',
+        title: 'Order saved',
+      });
     } catch (err) {
       console.error('Failed to reorder collection:', err);
-      alert(err.response?.data?.message || 'Unable to reorder items');
+      notify(err.response?.data?.message || 'Unable to reorder items.', {
+        tone: 'error',
+        title: 'Reorder failed',
+      });
     } finally {
       setSaving(false);
     }
@@ -531,6 +641,7 @@ const AdminCmsStudio = () => {
 
                   <div className="mt-5 grid gap-4">
                     <input
+                      required
                       value={bannerForm.title}
                       onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
                       className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
@@ -543,6 +654,7 @@ const AdminCmsStudio = () => {
                       placeholder="Subtitle"
                     />
                     <textarea
+                      required
                       value={bannerForm.description}
                       onChange={(e) => setBannerForm({ ...bannerForm, description: e.target.value })}
                       rows={4}
@@ -777,6 +889,7 @@ const AdminCmsStudio = () => {
 
                   <div className="mt-5 grid gap-4">
                     <input
+                      required
                       value={logoForm.companyName}
                       onChange={(e) => setLogoForm({ ...logoForm, companyName: e.target.value })}
                       className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
@@ -821,6 +934,7 @@ const AdminCmsStudio = () => {
                     <div className="grid gap-3 sm:grid-cols-3">
                       <input
                         type="number"
+                        min={0}
                         value={logoForm.priority}
                         onChange={(e) => setLogoForm({ ...logoForm, priority: e.target.value })}
                         className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
@@ -828,6 +942,7 @@ const AdminCmsStudio = () => {
                       />
                       <input
                         type="number"
+                        min={0}
                         value={logoForm.displayOrder}
                         onChange={(e) => setLogoForm({ ...logoForm, displayOrder: e.target.value })}
                         className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
@@ -950,6 +1065,7 @@ const AdminCmsStudio = () => {
                     placeholder="Announcement bar"
                   />
                   <input
+                    type="url"
                     value={websiteSettings.demoFormUrl || ''}
                     onChange={(e) => setWebsiteSettings({ ...websiteSettings, demoFormUrl: e.target.value })}
                     className="rounded-lg border border-border bg-background px-3 py-2 text-sm lg:col-span-2"
@@ -1119,20 +1235,24 @@ const AdminCmsStudio = () => {
                       placeholder="Working hours"
                     />
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <input
-                        type="number"
-                        value={contactSettings.latitude || ''}
-                        onChange={(e) => setContactSettings({ ...contactSettings, latitude: e.target.value })}
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                        placeholder="Latitude"
-                      />
-                      <input
-                        type="number"
-                        value={contactSettings.longitude || ''}
-                        onChange={(e) => setContactSettings({ ...contactSettings, longitude: e.target.value })}
-                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                        placeholder="Longitude"
-                      />
+                    <input
+                      type="number"
+                      min={-90}
+                      max={90}
+                      value={contactSettings.latitude ?? ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, latitude: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Latitude"
+                    />
+                    <input
+                      type="number"
+                      min={-180}
+                      max={180}
+                      value={contactSettings.longitude ?? ''}
+                      onChange={(e) => setContactSettings({ ...contactSettings, longitude: e.target.value })}
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      placeholder="Longitude"
+                    />
                     </div>
                   </div>
 

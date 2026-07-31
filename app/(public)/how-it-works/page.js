@@ -1,4 +1,17 @@
 import { ArrowRight, Info, HelpCircle, CheckCircle, ShieldCheck } from 'lucide-react';
+import { createPageMetadata, getSeoPageOverrides } from '../../../lib/seo';
+
+export async function generateMetadata() {
+  const seoPage = await getSeoPageOverrides('how-it-works');
+
+  return createPageMetadata({
+    title: 'How It Works',
+    description: 'Understand how the staged Cornerstone pathway maps local study to international credit.',
+    path: '/how-it-works',
+    keywords: ['how it works', 'pathway model', 'credit transfer'],
+    seoPage,
+  });
+}
 
 const HowItWorks = () => {
   return (

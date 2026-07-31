@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../services/auth';
 import { Lock, User } from 'lucide-react';
+import { useAdminFeedback } from '../../../components/admin/AdminFeedbackProvider';
+import { validateLoginForm } from '../../../lib/adminValidation';
 
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
@@ -12,18 +14,31 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   
   const { login } = useAuth();
+  const { notify } = useAdminFeedback();
   const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+
+    const validationErrors = validateLoginForm({ username, password });
+    if (validationErrors.length > 0) {
+      const message = validationErrors.join(' ');
+      setError(message);
+      notify(message, { tone: 'error', title: 'Check your login details' });
+      return;
+    }
+
     setLoading(true);
     try {
       await login(username, password);
+      notify('Signed in successfully.', { tone: 'success', title: 'Welcome back' });
       router.push('/admin/dashboard');
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || 'Login failed. Please check credentials.');
+      const message = err.response?.data?.message || 'Login failed. Please check credentials.';
+      setError(message);
+      notify(message, { tone: 'error', title: 'Login failed' });
     } finally {
       setLoading(false);
     }
@@ -41,7 +56,7 @@ const AdminLogin = () => {
         </div>
 
         {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 text-xs text-red-500 rounded text-center">
+          <div role="alert" className="p-3 bg-red-500/10 border border-red-500/20 text-xs text-red-500 rounded text-center">
             {error}
           </div>
         )}
@@ -56,9 +71,11 @@ const AdminLogin = () => {
               <input
                 type="text"
                 required
+                autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="admin"
+                aria-invalid={Boolean(error)}
                 className="w-full pl-9 pr-4 py-2 border border-border bg-background rounded-md text-sm focus:outline-none focus:border-primary"
               />
             </div>
@@ -73,9 +90,12 @@ const AdminLogin = () => {
               <input
                 type="password"
                 required
+                minLength={8}
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                aria-invalid={Boolean(error)}
                 className="w-full pl-9 pr-4 py-2 border border-border bg-background rounded-md text-sm focus:outline-none focus:border-primary"
               />
             </div>
