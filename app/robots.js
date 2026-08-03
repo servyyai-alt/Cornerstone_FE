@@ -1,6 +1,11 @@
-import { siteConfig } from '../lib/seo';
+import { getSiteSettings } from '../lib/seo';
 
-export default function robots() {
+export const dynamic = 'force-dynamic';
+
+export default async function robots() {
+  const siteSettings = await getSiteSettings();
+  const siteUrl = siteSettings.siteUrl;
+
   return {
     rules: [
       {
@@ -9,8 +14,7 @@ export default function robots() {
         disallow: ['/admin/', '/api/'],
       },
     ],
-    sitemap: `${siteConfig.url}/sitemap.xml`,
-    host: siteConfig.url,
+    sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   };
 }
-

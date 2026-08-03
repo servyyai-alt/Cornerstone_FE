@@ -4,28 +4,39 @@ import Link from 'next/link';
 const normalizeLogoList = (logos = []) =>
   logos.filter((logo) => logo && logo.status === 'active' && logo.logoImage).slice(0, 6);
 
-const Footer = ({ logos = [] }) => {
+const Footer = ({ logos = [], siteSettings = {} }) => {
   const activeLogos = normalizeLogoList(logos);
+  const siteName = siteSettings.siteName || 'Cornerstone';
+  const siteDescription =
+    siteSettings.siteDescription ||
+    "India's specialist international pathway college. Begin a UK-recognised degree at home, transfer to a partner university abroad, graduate internationally.";
+  const supportEmail = siteSettings.supportEmail || 'hello@cornerstone.edu';
+  const supportPhone = siteSettings.supportPhone || '+91 98765 43210';
+  const supportPhoneHref = `tel:${String(supportPhone).replace(/[\s()-]+/g, '')}`;
+  const siteLogo = String(siteSettings.siteLogo || '').trim();
 
   return (
     <footer className="mt-auto border-t border-border bg-surface">
       <div className="container-prose py-16">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_3fr]">
           <div>
-            <Link aria-label="Cornerstone home" href="/" className="flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background font-display text-xl font-semibold text-primary"
-              >
-                C
-              </span>
+            <Link aria-label={`${siteName} home`} href="/" className="flex items-center gap-2">
+              {siteLogo ? (
+                <img src={siteLogo} alt={siteName} className="h-10 max-w-[140px] object-contain" />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-border bg-background font-display text-xl font-semibold text-primary"
+                >
+                  C
+                </span>
+              )}
               <span className="font-display text-xl font-medium tracking-tight text-foreground">
-                Cornerstone
+                {siteName}
               </span>
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              India&apos;s specialist international pathway college. Begin a UK-recognised degree at home,
-              transfer to a partner university abroad, graduate internationally.
+              {siteDescription}
             </p>
             <div className="mt-6">
               <Link
@@ -196,19 +207,19 @@ const Footer = ({ logos = [] }) => {
         <div className="mt-12 grid gap-10 border-t border-border pt-10 md:grid-cols-3">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Cornerstone College
+              {siteName}
             </p>
             <address className="mt-3 not-italic text-sm leading-relaxed text-foreground/80">
               International Campus
               <br />
               Bengaluru, India
               <br />
-              <a href="mailto:hello@cornerstone.edu" className="hover:text-primary">
-                hello@cornerstone.edu
+              <a href={`mailto:${supportEmail}`} className="hover:text-primary">
+                {supportEmail}
               </a>
               <br />
-              <a href="tel:+910000000000" className="hover:text-primary">
-                +91 98765 43210
+              <a href={supportPhoneHref} className="hover:text-primary">
+                {supportPhone}
               </a>
             </address>
           </div>
@@ -227,7 +238,7 @@ const Footer = ({ logos = [] }) => {
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row md:items-center">
-          <p>&copy; 2026 Cornerstone. All rights reserved.</p>
+          <p>&copy; 2026 {siteName}. All rights reserved.</p>
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             <Link href="/accessibility" className="hover:text-primary">
               Accessibility statement

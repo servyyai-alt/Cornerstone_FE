@@ -553,6 +553,13 @@ const AdminCmsStudio = () => {
               <Sparkles className="h-4 w-4" />
               View website
             </Link>
+            <Link
+              href="/admin/settings/seo-analytics"
+              className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium transition hover:border-primary"
+            >
+              <Link2 className="h-4 w-4" />
+              SEO &amp; Analytics
+            </Link>
             <button
               onClick={handleLogout}
               className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary-hover"

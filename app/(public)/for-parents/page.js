@@ -39,7 +39,8 @@ const ForParents = () => {
   }
 
   const sections = (pageData?.sections || []).filter((section) => section.isVisible !== false);
-  const getSection = (id) => sections.find(s => s.sectionId === id) || { title: '', subtitle: '', content: '', items: [] };
+  const getSection = (id) =>
+    sections.find((s) => s.sectionId === id) || { title: '', subtitle: '', description: '', content: '', items: [] };
 
   const hero = getSection('hero');
   const quality = getSection('quality-recognition');
@@ -57,7 +58,7 @@ const ForParents = () => {
           {hero.title || 'Parent Decision Centre'}
         </h1>
         <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto">
-          {hero.subtitle || 'No urgency. No hype. Straight answers about recognition, progression, safety, money and outcomes — so your family can choose with confidence.'}
+          {hero.description || hero.subtitle || 'No urgency. No hype. Straight answers about recognition, progression, safety, money and outcomes — so your family can choose with confidence.'}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link
@@ -84,7 +85,7 @@ const ForParents = () => {
               {quality.title || 'Awarded by UK organisations regulated by Ofqual.'}
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              {quality.content || 'The Certificate and Diploma stages your child completes in India are awarded by Pearson and ATHE — UK awarding organisations regulated by Ofqual. These are recognised by partner universities in the UK, Australia, Canada and Ireland for credit-bearing entry.'}
+              {quality.description || quality.content || 'The Certificate and Diploma stages your child completes in India are awarded by Pearson and ATHE — UK awarding organisations regulated by Ofqual. These are recognised by partner universities in the UK, Australia, Canada and Ireland for credit-bearing entry.'}
             </p>
           </div>
         </div>
@@ -96,6 +97,11 @@ const ForParents = () => {
           <div className="mb-12 max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">University Progression</p>
             <h2 className="font-display text-3xl sm:text-4xl">{ladder.title || 'A staged ladder — honestly qualified.'}</h2>
+            {(ladder.description || ladder.content) && (
+              <p className="mt-4 text-muted-foreground leading-relaxed">
+                {ladder.description || ladder.content}
+              </p>
+            )}
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {(ladder.items && ladder.items.length > 0 ? ladder.items : [
@@ -161,7 +167,7 @@ const ForParents = () => {
               {finance.title || 'Roughly half the total outlay.'}
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-8">
-              {finance.content || 'Total cost typically lands between ₹46–72 lakh through the pathway, compared with ₹1.5–1.9 crore for full direct overseas degrees. Living costs depend on destination and city.'}
+              {finance.description || finance.content || 'Total cost typically lands between ₹46–72 lakh through the pathway, compared with ₹1.5–1.9 crore for full direct overseas degrees. Living costs depend on destination and city.'}
             </p>
             <div className="flex justify-center">
               <Link

@@ -8,6 +8,8 @@
   /* Light Theme Variables */
   --background: 255 255 255;
   --foreground: 14 30 52;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
   --primary: 232 181 67;
   --primary-foreground: 26 26 26;
   --primary-hover: 212 162 48;

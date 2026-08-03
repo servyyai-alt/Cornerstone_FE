@@ -1,7 +1,7 @@
 import { fetchPublicJson } from '../lib/serverApi';
-import { publicRoutes, resolveSiteUrl } from '../lib/seo';
+import { getSiteSettings, publicRoutes, resolveSiteUrl } from '../lib/seo';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 const staticPriorities = new Map([
   ['/', 1],
@@ -14,8 +14,8 @@ const staticPriorities = new Map([
   ['/success', 0.8],
 ]);
 
-const routeToEntry = (route) => ({
-  url: resolveSiteUrl(route),
+const routeToEntry = (route, siteUrl) => ({
+  url: resolveSiteUrl(route, siteUrl),
   lastModified: new Date(),
   changeFrequency: route === '/' ? 'weekly' : 'monthly',
   priority: staticPriorities.get(route) || 0.6,
@@ -27,10 +27,12 @@ const pageSlugToRoute = (slug = '') => {
 };
 
 export default async function sitemap() {
-  const [pages, seoPages] = await Promise.all([
+  const [pages, seoPages, siteSettings] = await Promise.all([
     fetchPublicJson('/pages/public', []),
     fetchPublicJson('/seo-pages/public', []),
+    getSiteSettings(),
   ]);
+  const siteUrl = siteSettings.siteUrl;
 
   const dynamicRoutes = [
     ...(Array.isArray(pages) ? pages : [])
@@ -39,7 +41,7 @@ export default async function sitemap() {
         if (!route) return null;
 
         return {
-          url: resolveSiteUrl(route),
+          url: resolveSiteUrl(route, siteUrl),
           lastModified: page.updatedAt ? new Date(page.updatedAt) : new Date(),
           changeFrequency: 'monthly',
           priority: page.slug === 'home' ? 1 : 0.7,
@@ -49,7 +51,7 @@ export default async function sitemap() {
     ...(Array.isArray(seoPages) ? seoPages : [])
       .map((page) => {
         const route = pageSlugToRoute(page.slug);
-        const url = page.canonicalUrl || (route ? resolveSiteUrl(route) : null);
+        const url = page.canonicalUrl || (route ? resolveSiteUrl(route, siteUrl) : null);
 
         if (!url) return null;
 
@@ -63,7 +65,7 @@ export default async function sitemap() {
       .filter(Boolean),
   ];
 
-  const staticRoutes = publicRoutes.map(routeToEntry);
+  const staticRoutes = publicRoutes.map((route) => routeToEntry(route, siteUrl));
   const combined = [...staticRoutes, ...dynamicRoutes];
   const deduped = new Map();
 

@@ -1,81 +1,17 @@
 import './globals.css';
 import Script from 'next/script';
-import { Inter, Fraunces } from 'next/font/google';
 import SeoJsonLd from '../components/SeoJsonLd';
 import {
   createOrganizationSchema,
   createWebsiteSchema,
-  siteConfig,
+  createPageMetadata,
+  getSiteSettings,
   resolveSiteUrl,
 } from '../lib/seo';
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-});
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-display',
-  display: 'swap',
-});
-
-const verification = {};
-
-if (process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION) {
-  verification.google =
-    process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION;
+export async function generateMetadata() {
+  return createPageMetadata({ path: '/' });
 }
-
-if (process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION) {
-  verification.bing = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
-}
-
-if (process.env.NEXT_PUBLIC_YANDEX_SITE_VERIFICATION) {
-  verification.yandex = process.env.NEXT_PUBLIC_YANDEX_SITE_VERIFICATION;
-}
-
-export const metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  keywords: [
-    'Cornerstone',
-    'international pathway college',
-    'study abroad',
-    'UK recognised degree',
-    'credit transfer',
-  ],
-  alternates: {
-    canonical: resolveSiteUrl('/'),
-  },
-  openGraph: {
-    title: siteConfig.name,
-    description: siteConfig.description,
-    url: resolveSiteUrl('/'),
-    siteName: siteConfig.name,
-    type: 'website',
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
-        alt: siteConfig.name,
-      },
-    ],
-  },
-  twitter: {
-    card: siteConfig.twitterCard,
-    title: siteConfig.name,
-    description: siteConfig.description,
-    images: [siteConfig.ogImage],
-  },
-  verification,
-};
 
 const themeBootstrapScript = `
   (function () {
@@ -92,16 +28,22 @@ const themeBootstrapScript = `
   })();
 `;
 
-const gaId = process.env.NEXT_PUBLIC_GA_ID;
-const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+export default async function RootLayout({ children }) {
+  const siteSettings = await getSiteSettings();
+  const gaId = siteSettings.googleAnalyticsId;
+  const gtmId = siteSettings.googleTagManagerId;
+  const organizationSchema = createOrganizationSchema({
+    name: siteSettings.siteName,
+    url: siteSettings.siteUrl,
+    logo: siteSettings.siteLogo ? resolveSiteUrl(siteSettings.siteLogo, siteSettings.siteUrl) : resolveSiteUrl('/assets/hero.png', siteSettings.siteUrl),
+  });
+  const websiteSchema = createWebsiteSchema({
+    name: siteSettings.siteName,
+    url: siteSettings.siteUrl,
+  });
 
-export default function RootLayout({ children }) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${fraunces.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground" suppressHydrationWarning>
         <Script id="theme-bootstrap" strategy="beforeInteractive">
           {themeBootstrapScript}
@@ -151,12 +93,7 @@ export default function RootLayout({ children }) {
           </>
         ) : null}
 
-        <SeoJsonLd
-          data={[
-            createOrganizationSchema(),
-            createWebsiteSchema(),
-          ]}
-        />
+        <SeoJsonLd data={[organizationSchema, websiteSchema]} />
         {children}
       </body>
     </html>

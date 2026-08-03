@@ -14,7 +14,7 @@ import {
 } from '../../../lib/adminValidation';
 import {
   Inbox, FileText, GraduationCap, Compass, Sparkles, LogOut,
-  Trash2, Edit, Plus, Check, RefreshCw, Upload, Eye
+  Trash2, Edit, Plus, Check, RefreshCw, Upload, Eye, Settings
 } from 'lucide-react';
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
@@ -430,6 +430,7 @@ const AdminDashboard = () => {
         sectionId: `section-${nextIndex}`,
         title: '',
         subtitle: '',
+        description: '',
         content: '',
         image: '',
         isVisible: true,
@@ -601,6 +602,18 @@ const AdminDashboard = () => {
           >
             <Sparkles className="h-4 w-4" /> Success Stories ({stories.length})
           </button>
+          <div className="mt-3 rounded-xl border border-border bg-background/60 p-3">
+            <p className="px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              Settings
+            </p>
+            <Link
+              href="/admin/settings/seo-analytics"
+              className="mt-2 inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition hover:bg-surface-2 hover:text-primary"
+            >
+              <Settings className="h-4 w-4" />
+              SEO &amp; Analytics
+            </Link>
+          </div>
         </aside>
 
         {/* Content Area */}
@@ -901,16 +914,31 @@ const AdminDashboard = () => {
                           </div>
                         </div>
 
-                        {/* Description / Content text block */}
+                        {/* Description text block */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold uppercase text-muted-foreground">Description</label>
+                          <textarea
+                            value={sec.description || ''}
+                            onChange={(e) => handlePageSectionChange(secIdx, 'description', e.target.value)}
+                            rows={4}
+                            className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                            placeholder="Visible description shown on the public website."
+                          />
+                        </div>
+
+                        {/* Legacy / extra content block */}
                         {sec.content !== undefined && (
                           <div className="space-y-1">
-                            <label className="text-[10px] font-semibold uppercase text-muted-foreground">Additional Content</label>
+                            <label className="text-[10px] font-semibold uppercase text-muted-foreground">Legacy / Extra Content</label>
                             <textarea
                               value={sec.content || ''}
                               onChange={(e) => handlePageSectionChange(secIdx, 'content', e.target.value)}
                               rows={3}
                               className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
                             />
+                            <p className="text-[10px] text-muted-foreground">
+                              Kept for older sections and specialized layouts. The public site prefers the description field.
+                            </p>
                           </div>
                         )}
 

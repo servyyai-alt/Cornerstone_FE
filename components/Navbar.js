@@ -30,11 +30,13 @@ const navLinks = {
   ],
 };
 
-const Navbar = () => {
+const Navbar = ({ siteSettings = {} }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [activeDropdown, setActiveDropdown] = useState(null);
   const pathname = usePathname();
+  const siteName = siteSettings.siteName || 'Cornerstone';
+  const siteLogo = String(siteSettings.siteLogo || '').trim();
   const dropdownIds = {
     pathways: useId(),
     universities: useId(),
@@ -91,15 +93,23 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/70 py-4 backdrop-blur transition-all">
       <div className="container-prose flex items-center justify-between gap-6">
-        <Link href="/" aria-label="Cornerstone home" className="flex items-center gap-2">
-          <span
-            aria-hidden="true"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface font-display text-lg font-semibold text-primary"
-          >
-            C
-          </span>
+        <Link href="/" aria-label={`${siteName} home`} className="flex items-center gap-2">
+          {siteLogo ? (
+            <img
+              src={siteLogo}
+              alt={siteName}
+              className="h-9 max-w-[120px] object-contain"
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface font-display text-lg font-semibold text-primary"
+            >
+              C
+            </span>
+          )}
           <span className="font-display text-lg font-medium tracking-tight text-foreground">
-            Cornerstone
+            {siteName}
           </span>
         </Link>
 
