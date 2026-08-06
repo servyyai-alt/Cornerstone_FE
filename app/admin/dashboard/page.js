@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../services/auth';
 import api from '../../../services/api';
 import AdminDialog from '../../../components/admin/AdminDialog';
+import Img from '../../../components/Img';
 import { useAdminFeedback } from '../../../components/admin/AdminFeedbackProvider';
+import { formatUtcDateTime } from '../../../lib/date';
 import {
   validatePageDraft,
   validateStoryForm,
@@ -113,7 +115,8 @@ const AdminDashboard = () => {
   const [uniForm, setUniForm] = useState({
     name: '', city: '', country: 'United Kingdom', subjects: '', 
     pathway: 'BTEC HND', transferYear: 'Year 2 or 3', 
-    awardingBody: 'Pearson', costLakhsMin: 45, costLakhsMax: 60, emiMonthly: 40000
+    awardingBody: 'Pearson', costLakhsMin: 45, costLakhsMax: 60, emiMonthly: 40000,
+    description: ''
   });
 
   // Success Story Form states
@@ -747,7 +750,7 @@ const AdminDashboard = () => {
                             </div>
                             <div>
                               <p className="font-semibold text-muted-foreground uppercase">Submitted Date</p>
-                              <p className="text-sm mt-0.5">{new Date(selectedInquiry.createdAt).toLocaleString()}</p>
+                              <p className="text-sm mt-0.5">{formatUtcDateTime(selectedInquiry.createdAt)}</p>
                             </div>
 
                             {/* Wizard Custom answers */}
@@ -955,7 +958,7 @@ const AdminDashboard = () => {
                             </div>
                             <div className="flex gap-2 items-center">
                               {sec.image && (
-                                <img src={sec.image.startsWith('/uploads') ? `${API_BASE}${sec.image}` : sec.image} alt="Preview" className="h-10 w-16 object-cover border rounded" />
+                                <Img src={sec.image.startsWith('/uploads') ? `${API_BASE}${sec.image}` : sec.image} alt="Preview" className="h-10 w-16 object-cover border rounded" />
                               )}
                               <label className="cursor-pointer inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded text-xs font-semibold hover:bg-primary hover:text-white transition-all">
                                 <Upload className="h-3.5 w-3.5" /> Upload File
@@ -1050,7 +1053,7 @@ const AdminDashboard = () => {
                                         </label>
                                       </div>
                                       {item.image && (
-                                        <img
+                                        <Img
                                           src={item.image.startsWith('/uploads') ? `${API_BASE}${item.image}` : item.image}
                                           alt={item.title || `Section item ${itemIdx + 1}`}
                                           className="h-16 w-full rounded border border-border object-cover"
@@ -1080,7 +1083,8 @@ const AdminDashboard = () => {
                         setUniForm({
                           name: '', city: '', country: 'United Kingdom', subjects: '', 
                           pathway: 'BTEC HND', transferYear: 'Year 2 or 3', 
-                          awardingBody: 'Pearson', costLakhsMin: 45, costLakhsMax: 60, emiMonthly: 40000
+                          awardingBody: 'Pearson', costLakhsMin: 45, costLakhsMax: 60, emiMonthly: 40000,
+                          description: ''
                         });
                         setUniFormOpen(true);
                       }}
@@ -1152,6 +1156,17 @@ const AdminDashboard = () => {
                             type="text" required value={uniForm.subjects} 
                             onChange={(e) => setUniForm({...uniForm, subjects: e.target.value})}
                             placeholder="Computing & Data, Business & Management, Engineering"
+                            className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase">Description</label>
+                          <textarea
+                            rows={4}
+                            value={uniForm.description || ''}
+                            onChange={(e) => setUniForm({...uniForm, description: e.target.value})}
+                            placeholder="Short description shown on the public website, e.g. A long-standing UK research university with strong business and computing schools."
                             className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none"
                           />
                         </div>

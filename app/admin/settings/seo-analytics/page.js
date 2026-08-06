@@ -22,6 +22,7 @@ import {
 import api from '../../../../services/api';
 import { useAuth } from '../../../../services/auth';
 import { useAdminFeedback } from '../../../../components/admin/AdminFeedbackProvider';
+import Container from '../../../../components/ui/Container';
 
 const emptySettings = {
   siteName: '',
@@ -230,6 +231,7 @@ export default function SeoAnalyticsSettingsPage() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- react-hook-form's watch() is the standard API for reactive field access
   const values = watch();
   const analyticsEnabled = Boolean(values.googleAnalyticsId || values.googleTagManagerId);
 
@@ -244,7 +246,7 @@ export default function SeoAnalyticsSettingsPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-surface/90 backdrop-blur">
-        <div className="container-prose flex flex-col gap-4 py-5 lg:flex-row lg:items-center lg:justify-between">
+        <Container className="flex flex-col gap-4 py-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-3">
             <Link
               href="/admin/dashboard"
@@ -275,10 +277,10 @@ export default function SeoAnalyticsSettingsPage() {
               {canEdit ? 'Super admin editor' : 'Read only'}
             </span>
           </div>
-        </div>
+        </Container>
       </header>
 
-      <section className="container-prose py-8">
+      <Container className="py-8">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Site</p>
@@ -296,9 +298,9 @@ export default function SeoAnalyticsSettingsPage() {
             <p className="mt-1 text-sm text-muted-foreground">{values.supportPhone || 'No phone configured'}</p>
           </div>
         </div>
-      </section>
+      </Container>
 
-      <section className="container-prose pb-16">
+      <Container className="pb-16">
         {loading ? (
           <SettingsSkeleton />
         ) : (
@@ -600,7 +602,7 @@ export default function SeoAnalyticsSettingsPage() {
             </div>
           </form>
         )}
-      </section>
+      </Container>
     </main>
   );
 }

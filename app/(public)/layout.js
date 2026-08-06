@@ -15,8 +15,13 @@ export default async function PublicLayout({ children }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <a href="#main-content" className="skip-link" aria-label="Skip to main content">
+        Skip to main content
+      </a>
       <Navbar siteSettings={siteSettings} />
-      <div className="flex-1">{children}</div>
+      <div id="main-content" tabIndex="-1" className="flex-1">
+        {children}
+      </div>
       <Footer logos={logos} siteSettings={siteSettings} />
     </div>
   );

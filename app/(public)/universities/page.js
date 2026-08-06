@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import { Search, SlidersHorizontal, BookOpen, GraduationCap, X } from 'lucide-react';
 import { useRouteData } from '../route-data-context';
+import Container from '../../../components/ui/Container';
+
+// Universities page metadata is handled by the root layout or can be added via CMS
 
 const Universities = () => {
   const routeData = useRouteData();
@@ -33,8 +36,6 @@ const Universities = () => {
         const res = await api.get('/universities?public=1');
         setUniversities(res.data);
         setFiltered(res.data);
-      } catch (err) {
-        console.error('Error fetching universities:', err);
       } finally {
         setLoading(false);
       }
@@ -106,7 +107,7 @@ const Universities = () => {
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
       {/* Header */}
-      <section className="container-prose pt-16 pb-8">
+      <Container className="pt-16 pb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">University Explorer</p>
         <h1 className="mt-4 font-display text-4xl sm:text-5xl lg:text-6xl max-w-3xl leading-[1.05]">
           See where your pathway can lead.
@@ -114,10 +115,10 @@ const Universities = () => {
         <p className="mt-4 text-muted-foreground max-w-2xl text-lg">
           Filter by country, subject track, budget limits, transfer year, and awarding organisation. Click any card for progression details.
         </p>
-      </section>
+      </Container>
 
       {/* Filters Section */}
-      <section className="container-prose mb-12">
+      <Container className="mb-12">
         <div className="rounded-xl border border-border bg-surface p-6 shadow-sm space-y-6 transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.06)]">
           {/* Top Row: Search and Budget */}
           <div className="grid gap-6 md:grid-cols-2">
@@ -220,10 +221,10 @@ const Universities = () => {
             </div>
           </div>
         </div>
-      </section>
+      </Container>
 
       {/* Grid of Results */}
-      <section className="container-prose">
+      <Container>
         <div className="flex justify-between items-center mb-6">
           <p className="text-sm text-muted-foreground">
             Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {universities.length} universities
@@ -264,6 +265,10 @@ const Universities = () => {
                     </div>
                   </div>
 
+                  {uni.description && (
+                    <p className="text-xs leading-5 text-muted-foreground mb-4">{uni.description}</p>
+                  )}
+
                   <div className="flex flex-wrap gap-1 mb-4">
                     {uni.subjects.map((sub, i) => (
                       <span key={i} className="text-[10px] uppercase font-semibold bg-surface-2 text-foreground/80 px-2 py-0.5 rounded">
@@ -302,7 +307,7 @@ const Universities = () => {
             ))}
           </div>
         )}
-      </section>
+      </Container>
 
       {/* Modal Detail Dialog */}
       {selectedUni && (
@@ -321,6 +326,13 @@ const Universities = () => {
               <h2 className="font-display text-2xl text-foreground pr-8">{selectedUni.name}</h2>
               <p className="text-sm text-primary mt-1">{selectedUni.city}, {selectedUni.country}</p>
             </div>
+
+            {selectedUni.description && (
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">About this university</h4>
+                <p className="text-sm leading-6 text-muted-foreground mt-2">{selectedUni.description}</p>
+              </div>
+            )}
 
             {/* Details Grid */}
             <div className="grid gap-4 sm:grid-cols-2 text-sm">

@@ -1,7 +1,9 @@
+import Container from '../../components/ui/Container';
+
 export default function Loading() {
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <div className="container-prose py-10">
+      <Container className="py-10">
         <div className="animate-pulse space-y-6">
           <div className="h-8 w-48 rounded bg-surface-2" />
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -11,7 +13,7 @@ export default function Loading() {
           </div>
           <div className="h-96 rounded-2xl border border-border bg-surface" />
         </div>
-      </div>
+      </Container>
     </main>
   );
 }

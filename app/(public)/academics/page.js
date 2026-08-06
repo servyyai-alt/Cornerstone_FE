@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { createPageMetadata, getSeoPageOverrides } from '../../../lib/seo';
+import Container from '../../../components/ui/Container';
 
 export async function generateMetadata() {
   const seoPage = await getSeoPageOverrides('academics');
@@ -30,7 +31,7 @@ const academicCards = [
 export default function AcademicsHubPage() {
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
-      <section className="container-prose pt-16 pb-12 max-w-3xl">
+      <Container className="pt-16 pb-12">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
           Academics
         </p>
@@ -41,9 +42,9 @@ export default function AcademicsHubPage() {
           These pages explain the academic logic behind the model so families can evaluate it with
           confidence.
         </p>
-      </section>
+      </Container>
 
-      <section className="container-prose grid gap-6 md:grid-cols-2">
+      <Container className="grid gap-6 md:grid-cols-2">
         {academicCards.map((card) => (
           <article
             key={card.href}
@@ -59,7 +60,7 @@ export default function AcademicsHubPage() {
             </Link>
           </article>
         ))}
-      </section>
+      </Container>
     </main>
   );
 }

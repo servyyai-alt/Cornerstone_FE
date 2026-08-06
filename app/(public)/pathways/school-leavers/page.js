@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { ArrowRight, Info, HelpCircle, CheckCircle, ShieldCheck } from 'lucide-react';
+import Container from '../../../../components/ui/Container';
 
 const SchoolLeavers = () => {
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
-      <section className="container-prose pt-16 pb-12 max-w-3xl text-center">
+      <Container className="pt-16 pb-12 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">School Leavers Pathway</p>
         <h1 className="font-display text-4xl sm:text-5xl leading-[1.05] tracking-tight">
           Begin an international degree at home.
@@ -12,8 +13,8 @@ const SchoolLeavers = () => {
         <p className="mt-4 text-muted-foreground text-lg">
           Start your UK-regulated degree pathway in India, adjust to international academic criteria, then transfer to final years abroad.
         </p>
-      </section>
-      <section className="container-prose max-w-3xl border border-border bg-surface p-8 rounded-xl shadow-sm space-y-6">
+      </Container>
+      <Container className="border border-border bg-surface p-8 rounded-xl shadow-sm space-y-6">
         <h2 className="font-display text-2xl text-primary">Why Stage the Journey?</h2>
         <p className="text-sm leading-relaxed text-muted-foreground">
           Leaving for study abroad at 18 is a massive transition. The Cornerstone pathway breaks this change into manageable stages. You complete the Certificate and Diploma stages (equivalent to Year 1 & 2 of a Bachelor's degree) locally, and then transfer to Year 3 of our partner universities in the UK, Australia, Canada, or Ireland.
@@ -33,7 +34,7 @@ const SchoolLeavers = () => {
             Find Your School Leaver Pathway <ArrowRight className="ml-1 h-4 w-4" />
           </Link>
         </div>
-      </section>
+      </Container>
     </main>
   );
 };

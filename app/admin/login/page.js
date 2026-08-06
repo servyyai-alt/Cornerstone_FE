@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+
+// Admin pages are protected by robots.txt Disallow and client-side auth
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../services/auth";
 import { Lock, User, Eye, EyeOff } from "lucide-react";

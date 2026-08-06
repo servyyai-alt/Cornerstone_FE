@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import Container from './ui/Container';
 
 const Breadcrumbs = ({ items = [] }) => {
   if (!items.length) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="container-prose pt-5">
+    <Container as="nav" aria-label="Breadcrumb" className="pt-5">
       <ol className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
@@ -26,7 +27,7 @@ const Breadcrumbs = ({ items = [] }) => {
           );
         })}
       </ol>
-    </nav>
+    </Container>
   );
 };
 

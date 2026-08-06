@@ -34,6 +34,7 @@ const getDocument = () => (typeof document === 'undefined' ? null : document);
 export const AdminFeedbackProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
   const [confirmState, setConfirmState] = useState(null);
+  const [mounted, setMounted] = useState(false);
   const toastTimers = useRef(new Map());
   const confirmResolveRef = useRef(null);
   const confirmCancelRef = useRef(null);
@@ -99,6 +100,10 @@ export const AdminFeedbackProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!confirmState) return undefined;
 
     const handleKeyDown = (event) => {
@@ -130,9 +135,10 @@ export const AdminFeedbackProvider = ({ children }) => {
   }, [confirmState, closeConfirm]);
 
   useEffect(() => {
+    const timers = toastTimers.current;
     return () => {
-      toastTimers.current.forEach((timer) => clearTimeout(timer));
-      toastTimers.current.clear();
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
       if (confirmResolveRef.current) {
         confirmResolveRef.current(false);
         confirmResolveRef.current = null;
@@ -145,7 +151,7 @@ export const AdminFeedbackProvider = ({ children }) => {
   return (
     <AdminFeedbackContext.Provider value={contextValue}>
       {children}
-      {getDocument()
+      {mounted
         ? createPortal(
             <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[80] flex flex-col items-end gap-3 px-4 sm:bottom-6 sm:px-6">
               {toasts.map((toast) => {
@@ -186,7 +192,7 @@ export const AdminFeedbackProvider = ({ children }) => {
           )
         : null}
 
-      {confirmState && getDocument()
+      {confirmState && mounted
         ? createPortal(
             <div
               className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"

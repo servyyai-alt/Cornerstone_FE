@@ -5,6 +5,9 @@ import Link from 'next/link';
 import api from '../../../services/api';
 import { ShieldCheck, CalendarRange, LineChart, Users } from 'lucide-react';
 import { useRouteData } from '../route-data-context';
+import Container from '../../../components/ui/Container';
+
+// For Parents page metadata is handled by the root layout or can be added via CMS
 
 const ForParents = () => {
   const routeData = useRouteData();
@@ -21,8 +24,6 @@ const ForParents = () => {
       try {
         const res = await api.get('/pages/for-parents?public=1');
         setPageData(res.data);
-      } catch (err) {
-        console.error('Error fetching parent center:', err);
       } finally {
         setLoading(false);
       }
@@ -50,7 +51,7 @@ const ForParents = () => {
   return (
     <main className="flex-1 bg-background text-foreground">
       {/* Hero */}
-      <section className="container-prose py-16 lg:py-24 text-center">
+      <Container className="py-16 lg:py-24 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-4">
           Parent Decision Centre
         </p>
@@ -58,7 +59,7 @@ const ForParents = () => {
           {hero.title || 'Parent Decision Centre'}
         </h1>
         <p className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto">
-          {hero.description || hero.subtitle || 'No urgency. No hype. Straight answers about recognition, progression, safety, money and outcomes — so your family can choose with confidence.'}
+          {hero.description || hero.subtitle || 'Clear information about recognition, progression, safety, finances and outcomes — so your family can make an informed decision.'}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link
@@ -74,11 +75,11 @@ const ForParents = () => {
             Find Your Pathway
           </Link>
         </div>
-      </section>
+      </Container>
 
       {/* Quality and Recognition */}
       <section className="border-t border-border bg-surface/30 py-16">
-        <div className="container-prose">
+        <Container>
           <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Quality & Recognition</p>
             <h2 className="font-display text-3xl sm:text-4xl leading-tight mb-4">
@@ -88,12 +89,12 @@ const ForParents = () => {
               {quality.description || quality.content || 'The Certificate and Diploma stages your child completes in India are awarded by Pearson and ATHE — UK awarding organisations regulated by Ofqual. These are recognised by partner universities in the UK, Australia, Canada and Ireland for credit-bearing entry.'}
             </p>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Staged Ladder */}
       <section className="border-t border-border py-16">
-        <div className="container-prose">
+        <Container>
           <div className="mb-12 max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">University Progression</p>
             <h2 className="font-display text-3xl sm:text-4xl">{ladder.title || 'A staged ladder — honestly qualified.'}</h2>
@@ -121,12 +122,12 @@ const ForParents = () => {
           <p className="mt-8 text-xs text-muted-foreground text-center">
             Each rung is a finish line. Onward progression is subject to academic performance and admission decisions by the awarding organisation and receiving university.
           </p>
-        </div>
+        </Container>
       </section>
 
       {/* Safety & Pastoral Support */}
       <section className="border-t border-border bg-surface/30 py-16">
-        <div className="container-prose grid gap-8 md:grid-cols-2 items-center">
+        <Container className="grid gap-8 md:grid-cols-2 items-center">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Safety, Support & Maturity</p>
             <h2 className="font-display text-3xl sm:text-4xl">The staged model is the safety story.</h2>
@@ -155,12 +156,12 @@ const ForParents = () => {
               <p className="text-xs text-muted-foreground">From initial planning in India to graduation overseas, the family always has a named advisor to contact.</p>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* Financial Planning */}
       <section className="border-t border-border py-16">
-        <div className="container-prose">
+        <Container>
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Financial Planning</p>
             <h2 className="font-display text-3xl sm:text-4xl mb-4">
@@ -178,7 +179,7 @@ const ForParents = () => {
               </Link>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     </main>
   );

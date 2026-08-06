@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, MessageSquare, Award, ClipboardCheck, Wallet, DoorOpen } from 'lucide-react';
 import { createPageMetadata, getSeoPageOverrides } from '../../../lib/seo';
+import Container from '../../../components/ui/Container';
 
 export async function generateMetadata() {
   const seoPage = await getSeoPageOverrides('admissions');
@@ -46,7 +47,7 @@ const Admissions = () => {
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
       {/* Header */}
-      <section className="container-prose pt-16 pb-12 text-center max-w-3xl">
+      <Container className="pt-16 pb-12 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Admissions Process</p>
         <h1 className="font-display text-4xl sm:text-5xl tracking-tight max-w-2xl mx-auto">
           A calm, structured pathway to study abroad.
@@ -54,10 +55,10 @@ const Admissions = () => {
         <p className="mt-4 text-muted-foreground text-sm max-w-lg mx-auto">
           Cornerstone operates rolling intakes four times a year (January, April, July, October). Staged evaluation keeps progress low-risk.
         </p>
-      </section>
+      </Container>
 
       {/* Steps List */}
-      <section className="container-prose max-w-3xl space-y-6">
+      <Container className="space-y-6">
         {steps.map((st, i) => (
           <div key={i} className="border border-border bg-surface p-6 rounded-xl flex gap-6 items-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.1)]">
             <span className="p-3 bg-primary/5 rounded-lg border border-primary/10 flex-shrink-0">
@@ -69,10 +70,10 @@ const Admissions = () => {
             </div>
           </div>
         ))}
-      </section>
+      </Container>
 
       {/* Call to action */}
-      <section className="container-prose mt-12 text-center">
+      <Container className="mt-12 text-center">
         <div className="flex flex-wrap justify-center gap-4">
           <Link 
             href="/admissions/eligibility" 
@@ -87,7 +88,7 @@ const Admissions = () => {
             Book Consultation
           </Link>
         </div>
-      </section>
+      </Container>
     </main>
   );
 };

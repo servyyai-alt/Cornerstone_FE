@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { Sliders, HelpCircle, ChevronRight } from 'lucide-react';
+import Container from '../../../../components/ui/Container';
+
+// Fees page metadata is handled by the root layout or can be added via CMS
 
 const AdmissionsFees = () => {
   const [destination, setDestination] = useState('United Kingdom');
@@ -35,7 +38,7 @@ const AdmissionsFees = () => {
 
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
-      <section className="container-prose pt-16 pb-12">
+      <Container className="pt-16 pb-12">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Cost Calculator</p>
         <h1 className="mt-4 font-display text-4xl sm:text-5xl lg:text-6xl max-w-3xl leading-[1.05]">
           The same degree, staged differently.
@@ -43,9 +46,9 @@ const AdmissionsFees = () => {
         <p className="mt-4 text-muted-foreground max-w-2xl text-lg">
           Staged cost estimates based on destination country and years of study in India. Compare pathway savings with direct admissions.
         </p>
-      </section>
+      </Container>
 
-      <section className="container-prose">
+      <Container>
         <div className="grid gap-8 lg:grid-cols-12">
           <div className="lg:col-span-7 rounded-xl border border-border bg-surface p-6 shadow-sm space-y-6">
             <h2 className="font-display text-xl border-b border-border pb-3 flex items-center gap-2">
@@ -54,12 +57,13 @@ const AdmissionsFees = () => {
             </h2>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Destination Country</label>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" id="destination-label">Destination Country</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="group" aria-labelledby="destination-label">
                 {Object.keys(costModels).map(country => (
                   <button
                     key={country}
                     onClick={() => setDestination(country)}
+                    aria-pressed={destination === country}
                     className={`py-2 px-3 text-xs font-semibold rounded-md border text-center transition-all duration-200 ${destination === country ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                   >
                     {country}
@@ -69,10 +73,11 @@ const AdmissionsFees = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Staging Split</label>
-              <div className="grid grid-cols-2 gap-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" id="staging-label">Staging Split</p>
+              <div className="grid grid-cols-2 gap-3" role="group" aria-labelledby="staging-label">
                 <button
                   onClick={() => setYearsInIndia(1)}
+                  aria-pressed={yearsInIndia === 1}
                   className={`p-4 text-left rounded-lg border transition-all duration-200 ${yearsInIndia === 1 ? 'border-primary bg-primary/5 shadow-[0_4px_12px_-4px_rgba(232,181,67,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                 >
                   <h4 className={`text-sm font-bold ${yearsInIndia === 1 ? 'text-primary' : ''}`}>1 Year India · 2 Years Abroad</h4>
@@ -80,6 +85,7 @@ const AdmissionsFees = () => {
                 </button>
                 <button
                   onClick={() => setYearsInIndia(2)}
+                  aria-pressed={yearsInIndia === 2}
                   className={`p-4 text-left rounded-lg border transition-all duration-200 ${yearsInIndia === 2 ? 'border-primary bg-primary/5 shadow-[0_4px_12px_-4px_rgba(232,181,67,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                 >
                   <h4 className={`text-sm font-bold ${yearsInIndia === 2 ? 'text-primary' : ''}`}>2 Years India · 1 Year Abroad</h4>
@@ -89,12 +95,13 @@ const AdmissionsFees = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Subject Track</label>
-              <div className="grid grid-cols-3 gap-2 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" id="subject-label">Subject Track</p>
+              <div className="grid grid-cols-3 gap-2 text-center" role="group" aria-labelledby="subject-label">
                 {['Computing & Data', 'Business & Management', 'Engineering'].map(sub => (
                   <button
                     key={sub}
                     onClick={() => setSubject(sub)}
+                    aria-pressed={subject === sub}
                     className={`py-2 px-3 text-xs font-semibold rounded-md border transition-all duration-200 ${subject === sub ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                   >
                     {sub}
@@ -111,7 +118,7 @@ const AdmissionsFees = () => {
             </div>
           </div>
 
-          <div className="lg:col-span-5 flex flex-col gap-6">
+          <div className="lg:col-span-5 flex flex-col gap-6" aria-live="polite">
             <div className="rounded-xl border border-border bg-surface p-6 shadow-sm flex-1 flex flex-col justify-between space-y-6 transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]">
               <div>
                 <h3 className="font-display text-xl border-b border-border pb-3 mb-6">Financial Comparison</h3>
@@ -157,7 +164,7 @@ const AdmissionsFees = () => {
             </div>
           </div>
         </div>
-      </section>
+      </Container>
     </main>
   );
 };

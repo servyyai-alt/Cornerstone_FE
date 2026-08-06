@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import Img from './Img';
+import Container from './ui/Container';
 
 const normalizeLogoList = (logos = []) =>
   logos.filter((logo) => logo && logo.status === 'active' && logo.logoImage).slice(0, 6);
@@ -17,12 +19,12 @@ const Footer = ({ logos = [], siteSettings = {} }) => {
 
   return (
     <footer className="mt-auto border-t border-border bg-surface">
-      <div className="container-prose py-16">
+      <Container className="py-16">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_3fr]">
           <div>
             <Link aria-label={`${siteName} home`} href="/" className="flex items-center gap-2">
               {siteLogo ? (
-                <img src={siteLogo} alt={siteName} className="h-10 max-w-[140px] object-contain" />
+                <Img src={siteLogo} alt={siteName} className="h-10 max-w-[140px] object-contain" />
               ) : (
                 <span
                   aria-hidden="true"
@@ -48,10 +50,10 @@ const Footer = ({ logos = [], siteSettings = {} }) => {
             </div>
           </div>
 
-          <nav className="grid grid-cols-2 gap-8 sm:grid-cols-4" aria-label="Footer">
+          <nav className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5" aria-label="Footer">
             <div>
               <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Pathways
+                Study Pathways
               </p>
               <ul className="space-y-2.5">
                 <li>
@@ -69,14 +71,21 @@ const Footer = ({ logos = [], siteSettings = {} }) => {
                     For Graduates
                   </Link>
                 </li>
+              </ul>
+            </div>
+            <div>
+              <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Programmes
+              </p>
+              <ul className="space-y-2.5">
                 <li>
-                  <Link href="/how-it-works" className="text-sm text-foreground/80 transition-colors hover:text-primary">
-                    How It Works
+                  <Link href="/programmes" className="text-sm text-foreground/80 transition-colors hover:text-primary">
+                    All Programmes
                   </Link>
                 </li>
                 <li>
-                  <Link href="/admin/login" className="text-sm text-foreground/80 transition-colors hover:text-primary">
-                    Admin Login
+                  <Link href="/how-it-works" className="text-sm text-foreground/80 transition-colors hover:text-primary">
+                    How Progression Works
                   </Link>
                 </li>
               </ul>
@@ -98,29 +107,7 @@ const Footer = ({ logos = [], siteSettings = {} }) => {
                 </li>
                 <li>
                   <Link href="/success" className="text-sm text-foreground/80 transition-colors hover:text-primary">
-                    Success Stories
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Academics
-              </p>
-              <ul className="space-y-2.5">
-                <li>
-                  <Link href="/academics/recognition" className="text-sm text-foreground/80 transition-colors hover:text-primary">
-                    Recognition &amp; Awarding Bodies
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/academics/transfer" className="text-sm text-foreground/80 transition-colors hover:text-primary">
-                    Credit Transfer
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/for-parents" className="text-sm text-foreground/80 transition-colors hover:text-primary">
-                    For Parents
+                    Student Outcomes
                   </Link>
                 </li>
               </ul>
@@ -137,17 +124,34 @@ const Footer = ({ logos = [], siteSettings = {} }) => {
                 </li>
                 <li>
                   <Link href="/admissions/eligibility" className="text-sm text-foreground/80 transition-colors hover:text-primary">
-                    Eligibility Checker
+                    Check Eligibility
                   </Link>
                 </li>
                 <li>
                   <Link href="/admissions/fees" className="text-sm text-foreground/80 transition-colors hover:text-primary">
-                    Fees &amp; Cost Calculator
+                    Fees & Cost Calculator
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/for-parents" className="text-sm text-foreground/80 transition-colors hover:text-primary">
+                    For Parents
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <p className="mb-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                About & Contact
+              </p>
+              <ul className="space-y-2.5">
+                <li>
+                  <Link href="/about" className="text-sm text-foreground/80 transition-colors hover:text-primary">
+                    About Cornerstone
                   </Link>
                 </li>
                 <li>
                   <Link href="/contact" className="text-sm text-foreground/80 transition-colors hover:text-primary">
-                    Book a Consultation
+                    Contact Us
                   </Link>
                 </li>
               </ul>
@@ -251,7 +255,7 @@ const Footer = ({ logos = [], siteSettings = {} }) => {
             </Link>
           </div>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 };

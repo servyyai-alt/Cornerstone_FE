@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import api from '../../../services/api';
+import Container from '../../../components/ui/Container';
 import { ArrowRight, ArrowLeft, CheckCircle, GraduationCap, Compass, Coins, Calendar, Mail } from 'lucide-react';
 
 const FindYourPathway = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   // Form Fields
   const [qualification, setQualification] = useState('');
@@ -24,6 +26,7 @@ const FindYourPathway = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setSubmitError('');
     try {
       await api.post('/inquiries', {
         type: 'pathway',
@@ -39,8 +42,7 @@ const FindYourPathway = () => {
       });
       setCompleted(true);
     } catch (err) {
-      console.error('Error submitting pathway inquiry:', err);
-      alert('There was a problem submitting your request. Please try again.');
+      setSubmitError('There was a problem submitting your request. Please try again or contact us directly.');
     } finally {
       setLoading(false);
     }
@@ -49,7 +51,7 @@ const FindYourPathway = () => {
   // Render logic for steps
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
-      <section className="container-prose pt-16 pb-12 text-center max-w-3xl">
+      <Container className="pt-16 pb-12 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Global Pathway Finder™</p>
         <h1 className="font-display text-4xl sm:text-5xl tracking-tight max-w-2xl mx-auto">
           Five questions. One personalised international plan.
@@ -57,9 +59,9 @@ const FindYourPathway = () => {
         <p className="mt-4 text-muted-foreground text-sm max-w-lg mx-auto">
           Tell us about yourself and we will map a staged route — qualifications, destinations, timelines and cost range.
         </p>
-      </section>
+      </Container>
 
-      <section className="container-prose max-w-2xl">
+      <Container>
         <div className="rounded-xl border border-border bg-surface p-8 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]">
           {!completed ? (
             <div className="space-y-6">
@@ -185,12 +187,20 @@ const FindYourPathway = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <h3 className="font-display text-xl text-foreground">5. Where should we send your pathway summary?</h3>
                   
+                  {submitError ? (
+                    <div role="alert" className="rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+                      {submitError}
+                    </div>
+                  ) : null}
+
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-semibold uppercase text-muted-foreground mb-1">Full Name</label>
+                      <label htmlFor="pathway-name" className="block text-xs font-semibold uppercase text-muted-foreground mb-1">Full Name</label>
                       <input 
+                        id="pathway-name"
                         type="text" 
                         required 
+                        autoComplete="name"
                         value={name} 
                         onChange={(e) => setName(e.target.value)}
                         placeholder="John Doe"
@@ -198,10 +208,12 @@ const FindYourPathway = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold uppercase text-muted-foreground mb-1">Email Address</label>
+                      <label htmlFor="pathway-email" className="block text-xs font-semibold uppercase text-muted-foreground mb-1">Email Address</label>
                       <input 
+                        id="pathway-email"
                         type="email" 
                         required 
+                        autoComplete="email"
                         value={email} 
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="john@example.com"
@@ -209,10 +221,12 @@ const FindYourPathway = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold uppercase text-muted-foreground mb-1">Phone Number</label>
+                      <label htmlFor="pathway-phone" className="block text-xs font-semibold uppercase text-muted-foreground mb-1">Phone Number</label>
                       <input 
+                        id="pathway-phone"
                         type="tel" 
                         required 
+                        autoComplete="tel"
                         value={phone} 
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="+91 98765 43210"
@@ -242,7 +256,7 @@ const FindYourPathway = () => {
             </div>
           ) : (
             /* Wizard Completed Output Results */
-            <div className="text-center space-y-6">
+            <div className="text-center space-y-6" aria-live="polite">
               <span className="inline-flex items-center justify-center rounded-full bg-green-500/10 text-green-500 p-3 mb-2">
                 <CheckCircle className="h-8 w-8" />
               </span>
@@ -316,7 +330,7 @@ const FindYourPathway = () => {
             </div>
           )}
         </div>
-      </section>
+      </Container>
     </main>
   );
 };

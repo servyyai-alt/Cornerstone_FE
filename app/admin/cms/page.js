@@ -6,6 +6,9 @@ import Link from 'next/link';
 import { useAuth } from '../../../services/auth';
 import api from '../../../services/api';
 import { useAdminFeedback } from '../../../components/admin/AdminFeedbackProvider';
+import Img from '../../../components/Img';
+import Container from '../../../components/ui/Container';
+import { formatUtcDateTime } from '../../../lib/date';
 import {
   validateBannerForm,
   validateContactSettings,
@@ -523,7 +526,7 @@ const AdminCmsStudio = () => {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-surface/95 backdrop-blur">
-        <div className="container-prose flex flex-col gap-4 py-5 lg:flex-row lg:items-center lg:justify-between">
+        <Container className="flex flex-col gap-4 py-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="flex items-center gap-3">
               <Link
@@ -568,10 +571,10 @@ const AdminCmsStudio = () => {
               Log out
             </button>
           </div>
-        </div>
+        </Container>
       </header>
 
-      <section className="container-prose py-8">
+      <Container className="py-8">
         <div className="grid gap-4 md:grid-cols-4">
           <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Banners</p>
@@ -615,9 +618,9 @@ const AdminCmsStudio = () => {
             </button>
           ))}
         </div>
-      </section>
+      </Container>
 
-      <section className="container-prose pb-16">
+      <Container className="pb-16">
         {loading ? (
           <div className="flex items-center justify-center rounded-2xl border border-border bg-surface py-20">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -719,7 +722,7 @@ const AdminCmsStudio = () => {
                             }}
                           />
                           {bannerForm[field] && (
-                            <img
+                            <Img
                               src={bannerForm[field]}
                               alt={label}
                               className="mt-2 h-20 w-full rounded-md border border-border object-cover"
@@ -812,7 +815,7 @@ const AdminCmsStudio = () => {
                         <div className="grid gap-0 md:grid-cols-[170px_1fr]">
                           <div className="bg-background">
                             {banner.desktopImage ? (
-                              <img
+                              <Img
                                 src={banner.desktopImage}
                                 alt={banner.altText || banner.title}
                                 className="h-full w-full object-cover"
@@ -872,8 +875,8 @@ const AdminCmsStudio = () => {
                             <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
                               <span>Order {banner.displayOrder ?? index}</span>
                               <span>Priority {banner.imagePriority ?? 0}</span>
-                              {banner.publishAt && <span>Publishes {new Date(banner.publishAt).toLocaleString()}</span>}
-                              {banner.expireAt && <span>Expires {new Date(banner.expireAt).toLocaleString()}</span>}
+                              {banner.publishAt && <span>Publishes {formatUtcDateTime(banner.publishAt)}</span>}
+                              {banner.expireAt && <span>Expires {formatUtcDateTime(banner.expireAt)}</span>}
                             </div>
                           </div>
                         </div>
@@ -930,7 +933,7 @@ const AdminCmsStudio = () => {
                         }}
                       />
                       {logoForm.logoImage && (
-                        <img
+                        <Img
                           src={logoForm.logoImage}
                           alt={logoForm.altText || logoForm.companyName}
                           className="mt-2 h-24 w-full rounded-md border border-border object-contain bg-background p-2"
@@ -987,7 +990,7 @@ const AdminCmsStudio = () => {
                           <div className="flex items-center gap-3">
                             <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-border bg-background">
                               {logo.logoImage ? (
-                                <img
+                                <Img
                                   src={logo.logoImage}
                                   alt={logo.altText || logo.companyName}
                                   className="h-full w-full object-contain p-2"
@@ -1141,7 +1144,7 @@ const AdminCmsStudio = () => {
                           }}
                         />
                         {websiteSettings[field] && (
-                          <img
+                          <Img
                             src={websiteSettings[field]}
                             alt={label}
                             className="mt-2 h-20 w-full rounded-md border border-border object-contain bg-background p-2"
@@ -1463,7 +1466,7 @@ const AdminCmsStudio = () => {
             )}
           </>
         )}
-      </section>
+      </Container>
     </main>
   );
 };

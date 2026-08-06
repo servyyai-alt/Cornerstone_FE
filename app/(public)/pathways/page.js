@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { createPageMetadata, getSeoPageOverrides } from '../../../lib/seo';
+import Container from '../../../components/ui/Container';
 
 export async function generateMetadata() {
   const seoPage = await getSeoPageOverrides('pathways');
@@ -38,7 +39,7 @@ const pathwayCards = [
 export default function PathwaysHubPage() {
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
-      <section className="container-prose pt-16 pb-12 max-w-3xl">
+      <Container className="pt-16 pb-12">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
           Pathways
         </p>
@@ -49,9 +50,9 @@ export default function PathwaysHubPage() {
           Each pathway is designed for a different stage of study, but they all follow the same
           staged model.
         </p>
-      </section>
+      </Container>
 
-      <section className="container-prose grid gap-6 md:grid-cols-3">
+      <Container className="grid gap-6 md:grid-cols-3">
         {pathwayCards.map((card) => (
           <article
             key={card.href}
@@ -67,7 +68,7 @@ export default function PathwaysHubPage() {
             </Link>
           </article>
         ))}
-      </section>
+      </Container>
     </main>
   );
 }

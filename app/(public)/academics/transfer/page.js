@@ -1,5 +1,6 @@
 import { ArrowRight, Info, HelpCircle, CheckCircle, ShieldCheck } from 'lucide-react';
 import { createPageMetadata, getSeoPageOverrides } from '../../../../lib/seo';
+import Container from '../../../../components/ui/Container';
 
 export async function generateMetadata() {
   const seoPage = await getSeoPageOverrides('academics-transfer');
@@ -16,7 +17,7 @@ export async function generateMetadata() {
 const Transfer = () => {
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
-      <section className="container-prose pt-16 pb-12 max-w-3xl text-center">
+      <Container className="pt-16 pb-12 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Credit Transfer</p>
         <h1 className="font-display text-4xl sm:text-5xl leading-[1.05] tracking-tight">
           How Credit Transfer Works
@@ -24,8 +25,8 @@ const Transfer = () => {
         <p className="mt-4 text-muted-foreground text-lg">
           What carries across, what doesn't, and who decides.
         </p>
-      </section>
-      <section className="container-prose max-w-3xl border border-border bg-surface p-8 rounded-xl shadow-sm space-y-6">
+      </Container>
+      <Container className="border border-border bg-surface p-8 rounded-xl shadow-sm space-y-6">
         <h2 className="font-display text-2xl text-primary">Progression Metrics</h2>
         <p className="text-sm leading-relaxed text-muted-foreground">
           When transferring credits:
@@ -44,7 +45,7 @@ const Transfer = () => {
             <p><span className="font-semibold text-foreground">Receiving Decision:</span> The final credit mapping and advanced standing decision rests solely with the admissions team of the receiving university.</p>
           </div>
         </div>
-      </section>
+      </Container>
     </main>
   );
 };

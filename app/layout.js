@@ -36,6 +36,15 @@ export default async function RootLayout({ children }) {
     name: siteSettings.siteName,
     url: siteSettings.siteUrl,
     logo: siteSettings.siteLogo ? resolveSiteUrl(siteSettings.siteLogo, siteSettings.siteUrl) : resolveSiteUrl('/assets/hero.png', siteSettings.siteUrl),
+    sameAs: [
+      siteSettings.facebookUrl,
+      siteSettings.instagramUrl,
+      siteSettings.linkedinUrl,
+      siteSettings.twitterUrl,
+      siteSettings.youtubeUrl,
+    ].filter(Boolean),
+    email: siteSettings.supportEmail,
+    telephone: siteSettings.supportPhone,
   });
   const websiteSchema = createWebsiteSchema({
     name: siteSettings.siteName,
@@ -44,6 +53,10 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#e8b543" />
+      </head>
       <body className="min-h-screen bg-background text-foreground" suppressHydrationWarning>
         <Script id="theme-bootstrap" strategy="beforeInteractive">
           {themeBootstrapScript}

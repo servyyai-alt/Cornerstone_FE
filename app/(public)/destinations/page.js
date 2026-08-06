@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import { Compass, GraduationCap, DollarSign, Heart } from 'lucide-react';
 import { useRouteData } from '../route-data-context';
+import Container from '../../../components/ui/Container';
+
+// Destinations page metadata is handled by the root layout or can be added via CMS
 
 const Destinations = () => {
   const routeData = useRouteData();
@@ -20,8 +23,6 @@ const Destinations = () => {
       try {
         const res = await api.get('/destinations?public=1');
         setDestinations(res.data);
-      } catch (err) {
-        console.error('Error fetching destinations:', err);
       } finally {
         setLoading(false);
       }
@@ -40,7 +41,7 @@ const Destinations = () => {
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
       {/* Header */}
-      <section className="container-prose pt-16 pb-12">
+      <Container className="pt-16 pb-12">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Destinations</p>
         <h1 className="mt-4 font-display text-4xl sm:text-5xl lg:text-6xl max-w-3xl leading-[1.05]">
           Pick the country that fits the family.
@@ -48,10 +49,10 @@ const Destinations = () => {
         <p className="mt-4 text-muted-foreground max-w-2xl text-lg">
           Clear-eyed, comparable facts regarding typical living costs, visa guidelines, and post-study opportunities across transfer destinations.
         </p>
-      </section>
+      </Container>
 
       {/* Destinations List */}
-      <section className="container-prose space-y-12">
+      <Container className="space-y-12">
         {destinations.map((dest) => (
           <div 
             key={dest._id} 
@@ -91,7 +92,7 @@ const Destinations = () => {
               </div>
 
               {/* Lifestyle Notes */}
-              <div className="border border-border bg-surface-2 p-5 rounded-lg flex flex-col justify-between col-span-1 sm:col-span-3 lg:col-span-1">
+              <div className="border border-border bg-surface-2 p-5 rounded-lg flex flex-col justify-between sm:col-span-3 lg:col-span-1">
                 <div>
                   <Heart className="h-5 w-5 text-primary mb-3" />
                   <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">Lifestyle notes</h3>
@@ -101,17 +102,17 @@ const Destinations = () => {
             </div>
           </div>
         ))}
-      </section>
+      </Container>
 
       {/* A Note on numbers */}
       <section className="bg-surface-2 border-t border-border/50 mt-16">
-        <div className="container-prose py-12 max-w-3xl text-center">
+        <Container className="py-12 text-center">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">A note on numbers</p>
           <h2 className="mt-3 font-display text-2xl leading-tight tracking-tight">Estimates, not promises.</h2>
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground rounded-md border border-dashed border-primary/20 bg-surface p-4 max-w-xl mx-auto transition-all duration-200 hover:border-primary/40">
             Cost-of-living and visa figures are indicative ranges from publicly available sources at the time of writing. Visa policies in particular change — always reconfirm before you commit.
           </p>
-        </div>
+        </Container>
       </section>
     </main>
   );

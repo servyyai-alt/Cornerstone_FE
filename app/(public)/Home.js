@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import api from '../../services/api';
-import { ArrowRight, Check, BookOpen, Users, Award, Globe, MapPin, Clock3 } from 'lucide-react';
+import { ArrowLeftRight, ArrowRight, Award, BadgeDollarSign, BookOpen, Check, Clock3, Globe, MapPin, Users } from 'lucide-react';
 
 const normalizeHomepageData = (payload) => ({
   pageData: payload?.pageData || null,
@@ -44,8 +44,6 @@ const Home = ({ initialData = null }) => {
         setUniversities(normalized.universities);
         setDestinations(normalized.destinations);
         setSuccessStories(normalized.successStories);
-      } catch (err) {
-        console.error('Error fetching home content:', err);
       } finally {
         setLoading(false);
       }
@@ -76,8 +74,8 @@ const Home = ({ initialData = null }) => {
   const heroImage = featuredBanner?.desktopImage || featuredBanner?.tabletImage || featuredBanner?.mobileImage || '/assets/hero.png';
   const heroCtaPrimaryText = featuredBanner?.button1Text || 'Find Your Pathway';
   const heroCtaPrimaryUrl = featuredBanner?.button1Url || '/find-your-pathway';
-  const heroCtaSecondaryText = featuredBanner?.button2Text || 'For Parents';
-  const heroCtaSecondaryUrl = featuredBanner?.button2Url || '/for-parents';
+  const heroCtaSecondaryText = featuredBanner?.button2Text || 'How It Works';
+  const heroCtaSecondaryUrl = featuredBanner?.button2Url || '/how-it-works';
   const activeLogos = logos.filter((logo) => logo.status === 'active');
   const propositionItems =
     proposition.items && proposition.items.length > 0
@@ -86,15 +84,15 @@ const Home = ({ initialData = null }) => {
           {
             title: 'Start at home',
             content:
-              'Begin on a UK-recognised qualification in India - lower risk, lower cost, recognised from year one.',
+              'Begin on a UK-recognised qualification in India. Progress through recognised stages before transferring abroad.',
           },
           {
             title: 'Transfer abroad',
-            content: 'Progress into Year 2 or 3 of a partner university degree overseas once you are ready.',
+            content: 'Progress into Year 2 or 3 of a partner university degree overseas once you meet the requirements.',
           },
           {
             title: 'Graduate internationally',
-            content: 'Finish with a globally recognised degree - and start a global career.',
+            content: 'Complete your degree with a partner university qualification.',
           },
         ];
   const successStoryItems =
@@ -132,11 +130,11 @@ const Home = ({ initialData = null }) => {
         ];
 
   const ladderSteps = [
-    { title: 'UK Certificate', location: 'India', duration: '8â€“12 months', body: 'Begin your internationally recognised qualification at home. Adjust to a UK academic style without leaving India.', awarding: 'Pearson / ATHE' },
-    { title: 'UK Diploma / Higher Diploma', location: 'India', duration: '8â€“12 months', body: 'Progress to year-2 equivalent content. Prepare for transfer options abroad.', awarding: 'Pearson / ATHE' },
-    { title: "Transfer into Bachelor's", location: 'India â†’ Abroad', duration: '1â€“2 years', body: 'Progress into Year 2 or 3 of a partner university degree overseas, once you meet requirements.', awarding: 'Partner Universities' },
-    { title: 'Graduate from Partner', location: 'Abroad', duration: 'Degree award', body: 'Finish with a globally recognised degree and start of a global career.', awarding: 'University degree' },
-    { title: "Master's Pathway", location: 'Abroad', duration: 'Optional post-grad', body: 'Dynamic options for postgraduate ladder qualifications.', awarding: 'Partner universities' }
+    { title: 'UK Certificate', location: 'India', duration: '8–12 months', body: 'Begin your recognised qualification at home. Adjust to a UK academic style without leaving India.', awarding: 'Pearson / ATHE' },
+    { title: 'UK Diploma / Higher Diploma', location: 'India', duration: '8–12 months', body: 'Progress to year-2 equivalent content. Prepare for transfer options abroad.', awarding: 'Pearson / ATHE' },
+    { title: "Transfer into Bachelor's", location: 'India → Abroad', duration: '1–2 years', body: 'Progress into Year 2 or 3 of a partner university degree overseas, once you meet requirements.', awarding: 'Partner Universities' },
+    { title: 'Graduate from Partner', location: 'Abroad', duration: 'Degree award', body: 'Complete your degree with a partner university qualification.', awarding: 'University degree' },
+    { title: "Master's Pathway", location: 'Abroad', duration: 'Optional post-grad', body: 'Postgraduate ladder qualifications available.', awarding: 'Partner universities' }
   ];
 
   const whyPathwayDefaults = [
@@ -218,15 +216,15 @@ const Home = ({ initialData = null }) => {
   return (
     <main className="flex-1 bg-background text-foreground">
       {/* Hero Section */}
-      <section className="border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+      <section className="border-b border-border" aria-labelledby="homepage-heading">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-4">
                 {featuredBanner?.subtitle || hero.content || 'In partnership with recognised UK awarding organisations'}
               </p>
-              <h1 className="font-['Fraunces'] text-4xl leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl text-foreground">
-                {featuredBanner?.title || hero.title || 'Your international university journey can begin today.'}
+              <h1 id="homepage-heading" className="font-['Fraunces'] text-4xl leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl text-foreground">
+                {featuredBanner?.title || hero.title || 'Begin your degree pathway in India. Complete it with a partner university qualification.'}
               </h1>
               <p className="mt-6 font-['Fraunces'] text-xl text-foreground/80 max-w-2xl">
                 {featuredBanner?.description || hero.description || hero.subtitle || 'Begin a UK-recognised degree pathway in India. Transfer to a partner university abroad. Graduate internationally.'}
@@ -247,7 +245,6 @@ const Home = ({ initialData = null }) => {
                 </Link>
               </div>
 
-              {/* Partner Logos */}
               <div className="mt-12 pt-8 border-t border-border">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
                   In partnership with recognised UK awarding organisations
@@ -265,6 +262,7 @@ const Home = ({ initialData = null }) => {
                           alt={logo.altText || logo.companyName}
                           width={100}
                           height={40}
+                          loading="lazy"
                           className="max-h-8 w-auto object-contain"
                         />
                       </div>
@@ -289,9 +287,10 @@ const Home = ({ initialData = null }) => {
                 <Image
                   src={heroImage}
                   alt={featuredBanner?.altText || 'Cornerstone hero banner'}
-                  width={800}
+                  width={600}
                   height={600}
                   priority={Boolean(featuredBanner?.imagePriority)}
+                  quality={90}
                   className="w-full h-[400px] sm:h-[500px] lg:h-[560px] object-cover"
                   sizes="(min-width: 1024px) 50vw, 100vw"
                 />
@@ -307,7 +306,7 @@ const Home = ({ initialData = null }) => {
           <div className="text-center mb-12">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">The Proposition</p>
             <h2 className="font-['Fraunces'] text-3xl sm:text-4xl text-foreground">
-              {proposition.title || 'The smarter way to a global degree.'}
+              {proposition.title || 'A structured route to a partner university degree.'}
             </h2>
             {(proposition.description || proposition.content) && (
               <p className="mt-4 text-muted-foreground max-w-3xl mx-auto">
@@ -337,7 +336,7 @@ const Home = ({ initialData = null }) => {
           <div className="max-w-3xl mb-12">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">An honest look</p>
             <h2 className="font-['Fraunces'] text-3xl sm:text-4xl leading-tight text-foreground">
-              {honestLook.subtitle || 'Going straight overseas is harder than the brochure suggests.'}
+              {honestLook.subtitle || 'Direct overseas study involves considerations worth understanding.'}
             </h2>
             {(honestLook.description || honestLook.content) && (
               <p className="mt-4 text-muted-foreground">
@@ -347,7 +346,7 @@ const Home = ({ initialData = null }) => {
           </div>
           <div className="grid gap-6 sm:grid-cols-3">
             {(honestLook.items && honestLook.items.length > 0 ? honestLook.items : [
-              { title: 'The full cost, all at once', subtitle: '01', content: 'Three to four years entirely abroad means committing the entire fee, living and travel cost upfront â€” before knowing whether the fit is right.' },
+              { title: 'The full cost, all at once', subtitle: '01', content: 'Three to four years entirely abroad means committing the entire fee, living and travel cost upfront — before knowing whether the fit is right.' },
               { title: 'One big leap, one big bet', subtitle: '02', content: 'Going straight overseas concentrates every decision into a single moment. There is little room to adjust without losing time or money.' },
               { title: 'Moving abroad alone at 18', subtitle: '03', content: 'A new country, a new academic system, and a new way of living far from family. For many capabilities, that transition is the hard part.' }
             ]).map((item, idx) => (
@@ -367,8 +366,8 @@ const Home = ({ initialData = null }) => {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
               {whyPathway.subtitle || 'Why pathway education'}
             </p>
-            <h2 className="font-['Fraunces'] text-3xl sm:text-4xl text-foreground">
-              {whyPathway.title || 'Two routes to the same degree. One is smarter.'}
+              <h2 className="font-['Fraunces'] text-3xl sm:text-4xl text-foreground">
+              {whyPathway.title || 'Two routes to the same degree. One is staged.'}
             </h2>
             <p className="mt-4 text-muted-foreground">
               {whyPathway.description || whyPathway.content || 'A pathway lets you stage the journey - prove yourself on a UK-recognised qualification at home, then transfer abroad once you are ready. Same destination; a calmer, more considered way to get there.'}
@@ -636,6 +635,10 @@ const Home = ({ initialData = null }) => {
                     {subjects.length > 0 ? subjects.join(' · ') : 'Business & Management · Computing & Data'}
                   </p>
 
+                  {uni.description && (
+                    <p className="mt-3 text-xs leading-5 text-muted-foreground">{uni.description}</p>
+                  )}
+
                   <div className="mt-6 border-t border-border pt-5">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                       <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Pathway</span>
@@ -755,7 +758,7 @@ const Home = ({ initialData = null }) => {
       </section>
 
       {/* Universities whereour students have progressed */}
-      <section className="border-b border-border py-16 lg:py-20">
+      {/* <section className="border-b border-border py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-left mb-10">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Universities our students have progressed to</p>
@@ -777,7 +780,7 @@ const Home = ({ initialData = null }) => {
                   <p>Awarding: <span className="text-foreground/90">{uni.awardingBody}</span></p>
                 </div>
                 <Link href={`/universities#${uni.name.toLowerCase().replace(/\s+/g, '-')}`} className="inline-block mt-4 text-primary text-xs font-medium hover:underline underline-offset-4">
-                  See pathways into {uni.name.split(' ')[0]} â†’
+                  See pathways into {uni.name.split(' ')[0]} →
                 </Link>
               </div>
             )) : (
@@ -802,40 +805,156 @@ const Home = ({ initialData = null }) => {
                     <p>Awarding: <span className="text-foreground/90">{uni.awardingBody}</span></p>
                   </div>
                   <Link href={`/universities#${uni.name.toLowerCase().replace(/\s+/g, '-')}`} className="inline-block mt-4 text-primary text-xs font-medium hover:underline underline-offset-4">
-                    See pathways into {uni.name.split(' ')[0]} â†’
+                    See pathways into {uni.name.split(' ')[0]} →
                   </Link>
                 </div>
               ))
             )}
           </div>
         </div>
-      </section>
+      </section> */}
+      <section className="border-b border-border bg-surface/30 py-16 lg:py-20">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    {/* Header */}
+    <div className="max-w-3xl mb-12">
+      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">
+        PROGRESSION PARTNERS
+      </p>
+
+      <h2 className="font-['Fraunces'] text-3xl sm:text-4xl lg:text-5xl leading-[1.08] text-foreground">
+        Universities our students have progressed to.
+      </h2>
+
+      <p className="mt-4 text-muted-foreground">
+        These institutions have accepted Cornerstone students into advanced
+        standing on a case-by-case basis. Final transfer decisions rest with
+        the receiving university.
+      </p>
+    </div>
+
+    {/* University Name Grid */}
+
+    <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm mb-16">
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+
+        {[
+          "Greenwich",
+          "Ulster",
+          "RMIT",
+          "UTS",
+          "Coventry",
+          "Birmingham City",
+          "Northumbria",
+          "Hertfordshire",
+          "Plymouth",
+          "Roehampton",
+          "South Wales",
+          "Sunderland",
+        ].map((name, index) => (
+          <div
+            key={index}
+            className="border-r border-b border-border last:border-r-0 h-24 lg:h-28 flex items-center justify-center text-center px-4"
+          >
+            <span className="font-['Fraunces'] text-xl font-normal text-foreground">
+              {name}
+            </span>
+          </div>
+        ))}
+
+      </div>
+
+    </div>
+
+    
+
+    <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
+
+      {(universities.length > 0
+        ? universities.slice(0, 3)
+        : [
+            {
+              name: "Ulster University",
+              country: "United Kingdom",
+              description:
+                "A long-standing UK research university with strong business, design and computing schools — a frequent transfer destination for our diploma graduates."
+            },
+            {
+              name: "RMIT University",
+              country: "Australia",
+              description:
+                "Global top-15 in art & design; strong engineering and technology faculties in Melbourne, with established advanced-standing routes."
+            },
+            {
+              name: "University of Technology Sydney",
+              country: "Australia",
+              description:
+                "One of Australia's youngest top-tier universities, recognised for industry-linked teaching across design, IT and business."
+            }
+          ]
+      ).map((uni, index) => (
+
+        <div
+          key={index}
+          className="rounded-2xl border border-border bg-surface p-6 lg:p-8 shadow-sm hover:-translate-y-1 hover:border-primary/40 hover:shadow-md transition-all duration-300"
+        >
+
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary mb-4">
+            {uni.country}
+          </p>
+
+          <h3 className="font-['Fraunces'] text-2xl text-foreground mb-4">
+            {uni.name}
+          </h3>
+
+          <p className="text-sm leading-7 text-muted-foreground mb-6">
+            {uni.description || 'A partner university that has welcomed Cornerstone students into advanced standing on a case-by-case basis.'}
+          </p>
+
+          <Link
+            href={`/universities#${uni.name
+              .toLowerCase()
+              .replace(/\s+/g, "-")}`}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline underline-offset-4 transition-colors"
+          >
+            See pathways into {uni.name.split(" ")[0]}
+            <span>↗</span>
+          </Link>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+</section>
 
       {/* Recognition & Awarding Details */}
       <section className="border-b border-border bg-surface/30 py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="max-w-3xl mb-12">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">{recognition.subtitle || 'Recognition'}</p>
-            <h2 className="font-['Fraunces'] text-3xl sm:text-4xl text-foreground">{recognition.title || 'Awarded by recognised UK organisations.'}</h2>
-            <p className="mt-4 text-sm text-muted-foreground">{recognition.description || recognition.content || 'Cornerstone pathway qualifications are awarded by established UK awarding organisations Pearson and ATHE.'}</p>
+            <h2 className="font-['Fraunces'] text-3xl sm:text-4xl lg:text-5xl leading-[1.08] text-foreground">{recognition.title || 'Awarded by recognised UK organisations.'}</h2>
+            <p className="mt-4 text-muted-foreground">{recognition.description || recognition.content || 'Cornerstone pathway qualifications are awarded by established UK awarding organisations Pearson and ATHE.'}</p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
+          <div className="grid gap-6 md:grid-cols-2 md:gap-8">
             {(recognition.items && recognition.items.length > 0 ? recognition.items : [
               { title: 'Pearson BTEC', content: "The UK's largest awarding organisation. Pearson BTEC and Higher National qualifications are recognised by universities and employers across more than 70 countries." },
               { title: 'ATHE', content: 'ATHE is a UK Ofqual-regulated awarding organisation, offering qualifications widely accepted for entry and progression into universities in the UK and overseas.' }
             ]).map((item, idx) => (
-              <div key={idx} className="border border-border bg-surface rounded-xl p-6 hover:border-primary/30 transition-all duration-300">
-                <div className="flex-1">
-                  <h3 className="font-['Fraunces'] text-xl text-primary mb-3">{item.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{item.content}</p>
-                </div>
+              <div key={idx} className="rounded-2xl border border-border bg-surface p-6 lg:p-8 shadow-sm hover:-translate-y-1 hover:border-primary/40 hover:shadow-md transition-all duration-300">
+                <h3 className="font-['Fraunces'] text-2xl text-primary mb-4">{item.title}</h3>
+                <p className="text-sm leading-7 text-muted-foreground">{item.content}</p>
               </div>
             ))}
           </div>
-          <div className="text-center mt-6">
-            <Link href="/academics/recognition" className="text-primary text-sm font-medium hover:underline underline-offset-4">
-              How recognition works â†’
+          <div className="mt-8">
+            <Link href="/academics/recognition" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline underline-offset-4 transition-colors">
+              How recognition works
+              <span>↗</span>
             </Link>
           </div>
         </div>
@@ -845,10 +964,10 @@ const Home = ({ initialData = null }) => {
       <section className="border-b border-border py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-primary-bg border border-primary/30 rounded-2xl p-8 lg:p-12">
-            <div className="max-w-3xl">
+            <div className="max-w-2xl lg:max-w-3xl">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">For current university students</p>
-              <h2 className="font-['Fraunces'] text-3xl sm:text-4xl mb-4 text-foreground">Already at university in India? You may be eligible for credit transfer.</h2>
-              <p className="text-muted-foreground mb-8 text-sm">Modules and credits you've already earned can, in many cases, count towards a UK-recognised qualification â€” opening up advanced standing into partner universities abroad.</p>
+              <h2 className="font-['Fraunces'] text-3xl sm:text-4xl lg:text-5xl leading-[1.08] mb-4 text-foreground">Already at university in India? You may be eligible for credit transfer.</h2>
+              <p className="text-muted-foreground mb-8 text-sm leading-7">Modules and credits you've already earned can, in many cases, count towards a UK-recognised qualification — opening up advanced standing into partner universities abroad.</p>
               <div className="flex flex-wrap gap-4">
                 <Link
                   href="/admissions/eligibility"
@@ -865,21 +984,23 @@ const Home = ({ initialData = null }) => {
       {/* For Parents */}
       <section className="border-b border-border bg-surface/30 py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-left mb-10">
+          <div className="max-w-3xl mb-12">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">For parents</p>
-            <h2 className="font-['Fraunces'] text-3xl sm:text-4xl text-foreground">The questions a parent asks first.</h2>
+            <h2 className="font-['Fraunces'] text-3xl sm:text-4xl lg:text-5xl leading-[1.08] text-foreground">The questions a parent asks first.</h2>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-3 mb-10">
+          <div className="grid gap-6 sm:grid-cols-3 mb-12">
             {[
-              { icon: 'ðŸ†', title: 'Recognition', subtitle: 'Our qualifications are recognised by UK awarding organisations â€” Pearson and ATHE.' },
-              { icon: 'ðŸ“‹', title: 'Transfer outcomes', subtitle: 'Progression depends on academic performance and receiving university admission requirements.' },
-              { icon: 'ðŸ’¸', title: 'Financing options', subtitle: 'Flexible options to help manage the cost of study, including instalment plans.' }
+              { icon: Award, title: 'Recognition', subtitle: 'Our qualifications are recognised by UK awarding organisations — Pearson and ATHE.' },
+              { icon: ArrowLeftRight, title: 'Transfer outcomes', subtitle: 'Progression depends on academic performance and receiving university admission requirements.' },
+              { icon: BadgeDollarSign, title: 'Financing options', subtitle: 'Flexible options to help manage the cost of study, including instalment plans.' }
             ].map((item, idx) => (
-              <div key={idx} className="border border-border bg-surface rounded-xl p-6 hover:border-primary/30 transition-all duration-300">
-                <div className="text-2xl mb-4">{item.icon}</div>
-                <h3 className="font-['Fraunces'] text-lg mb-2 text-foreground">{item.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{item.subtitle}</p>
+              <div key={idx} className="rounded-2xl border border-border bg-surface p-6 lg:p-8 shadow-sm hover:-translate-y-1 hover:border-primary/40 hover:shadow-md transition-all duration-300">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <item.icon className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <h3 className="font-['Fraunces'] text-xl mb-2 text-foreground">{item.title}</h3>
+                <p className="text-sm leading-7 text-muted-foreground">{item.subtitle}</p>
               </div>
             ))}
           </div>
@@ -902,28 +1023,28 @@ const Home = ({ initialData = null }) => {
       </section>
 
       {/* Student Success */}
-      <section className="border-b border-border py-16 lg:py-20 bg-surface/30">
+      <section className="border-b border-border bg-background py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-10">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Student success</p>
-              <h2 className="font-['Fraunces'] text-3xl sm:text-4xl text-foreground">Individual journeys, not promises.</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary mb-2">Student outcomes</p>
+              <h2 className="font-['Fraunces'] text-3xl sm:text-4xl lg:text-5xl leading-[1.08] text-foreground">Documented student journeys.</h2>
             </div>
             <Link href="/success" className="text-primary text-sm font-medium hover:underline underline-offset-4 hidden sm:block">
-              See more stories â†’
+              See more stories →
             </Link>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
             {successStoryItems.map((story, idx) => (
-              <div key={idx} className="border border-border bg-surface rounded-xl p-6 hover:border-primary/30 transition-all duration-300">
+              <div key={idx} className="rounded-2xl border border-border bg-surface p-6 lg:p-8 shadow-sm hover:-translate-y-1 hover:border-primary/40 hover:shadow-md transition-all duration-300">
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <span className="text-lg font-bold text-primary">{story.initials}</span>
                   </div>
                   <div className="flex-1">
                     <h3 className="font-['Fraunces'] text-lg text-foreground mb-1">{story.startPoint}</h3>
-                    <p className="text-xs text-muted-foreground mb-2">{story.pathway} Â· {story.destination}</p>
+                    <p className="text-xs text-muted-foreground mb-2">{story.pathway} · {story.destination}</p>
                     <p className="text-sm text-muted-foreground">{story.outcome}</p>
                   </div>
                 </div>
@@ -932,7 +1053,7 @@ const Home = ({ initialData = null }) => {
           </div>
           <div className="text-center mt-6 sm:hidden">
             <Link href="/success" className="text-primary text-sm font-medium hover:underline underline-offset-4">
-              See more stories â†’
+              See more stories →
             </Link>
           </div>
         </div>

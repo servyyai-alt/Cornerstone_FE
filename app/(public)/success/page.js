@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import { useRouteData } from '../route-data-context';
+import Container from '../../../components/ui/Container';
+
+// Success page metadata is handled by the root layout or can be added via CMS
 
 const Success = () => {
   const routeData = useRouteData();
@@ -19,8 +22,6 @@ const Success = () => {
       try {
         const res = await api.get('/success-stories?public=1');
         setStories(res.data);
-      } catch (err) {
-        console.error('Error fetching success stories:', err);
       } finally {
         setLoading(false);
       }
@@ -39,18 +40,18 @@ const Success = () => {
   return (
     <main className="flex-1 bg-background text-foreground pb-24">
       {/* Header */}
-      <section className="container-prose pb-10 pt-16 lg:pb-16 lg:pt-24">
+      <Container className="pb-10 pt-16 lg:pb-16 lg:pt-24">
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Student Journeys</p>
         <h1 className="mt-4 max-w-3xl font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl text-foreground">
-          Individual journeys, not promises.
+          Documented student journeys.
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-          Real students, real routes. The pathway is the same shape; the outcomes belong to each student.
+          Real students, real routes. Each journey is shared with permission and reflects individual effort and choices.
         </p>
-      </section>
+      </Container>
 
       {/* Grid */}
-      <section className="container-prose pb-16">
+      <Container className="pb-16">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {stories.map((story) => (
             <article key={story._id} className="rounded-xl border border-border bg-surface p-6 flex flex-col justify-between shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_16px_32px_-10px_rgba(0,0,0,0.12)]">
@@ -68,17 +69,17 @@ const Success = () => {
             </article>
           ))}
         </div>
-      </section>
+      </Container>
 
       {/* Footer warning */}
       <section className="bg-surface-2 border-t border-border/50">
-        <div className="container-prose py-12 text-center max-w-3xl">
+        <Container className="py-12 text-center">
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">A note</p>
           <h2 className="mt-3 font-display text-2xl leading-tight tracking-tight">Outcomes depend on the student.</h2>
           <p className="mt-4 text-xs leading-relaxed text-muted-foreground rounded-md border border-dashed border-border bg-surface p-4 max-w-xl mx-auto">
             Each journey is shared with the student's permission. Outcomes reflect individual effort, choices and admission decisions, and are not a forecast for any other student.
           </p>
-        </div>
+        </Container>
       </section>
     </main>
   );
