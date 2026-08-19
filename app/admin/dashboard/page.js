@@ -731,7 +731,9 @@ const AdminDashboard = () => {
                               <h3 className="font-display text-xl mt-1">{selectedInquiry.name}</h3>
                             </div>
                             <button 
+                              type="button"
                               onClick={() => deleteInquiry(selectedInquiry._id)}
+                              aria-label="Delete lead"
                               className="text-muted-foreground hover:text-red-500 p-1"
                               title="Delete Lead"
                             >
@@ -1239,6 +1241,7 @@ const AdminDashboard = () => {
                             <td className="p-3 font-semibold text-primary">₹{uni.costLakhsMin}–{uni.costLakhsMax} Lakhs</td>
                             <td className="p-3 text-right space-x-2">
                               <button 
+                                type="button"
                                 onClick={() => {
                                   setEditingUni(uni);
                                   setUniForm({
@@ -1249,12 +1252,15 @@ const AdminDashboard = () => {
                                   });
                                   setUniFormOpen(true);
                                 }}
+                                aria-label={`Edit ${uni.name}`}
                                 className="text-muted-foreground hover:text-primary p-1"
                               >
                                 <Edit className="h-4 w-4" />
                               </button>
                               <button 
+                                type="button"
                                 onClick={() => deleteUniversity(uni._id)}
+                                aria-label={`Delete ${uni.name}`}
                                 className="text-muted-foreground hover:text-red-500 p-1"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -1378,17 +1384,21 @@ const AdminDashboard = () => {
                         </div>
                         <div className="flex gap-1 flex-shrink-0">
                           <button 
+                            type="button"
                             onClick={() => {
                               setEditingStory(story);
                               setStoryForm(story);
                               setStoryFormOpen(true);
                             }}
+                            aria-label={`Edit story ${story.initials}`}
                             className="text-muted-foreground hover:text-primary p-1"
                           >
                             <Edit className="h-3.5 w-3.5" />
                           </button>
                           <button 
+                            type="button"
                             onClick={() => deleteStory(story._id)}
+                            aria-label={`Delete story ${story.initials}`}
                             className="text-muted-foreground hover:text-red-500 p-1"
                           >
                             <Trash2 className="h-3.5 w-3.5" />

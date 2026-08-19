@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 // Admin routes are protected client-side via AuthContext.
-// Keep a valid middleware export so Next.js can compile the file cleanly.
-export function middleware() {
+// Keep a valid proxy export so Next.js can compile the file cleanly.
+export function proxy() {
   return NextResponse.next();
 }
 

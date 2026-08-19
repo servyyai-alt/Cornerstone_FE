@@ -136,7 +136,7 @@ const Universities = () => {
               />
             </div> */}
             <div className="relative w-full">
-  <Search
+  <Search aria-label="Search"
     className="absolute left-3  top-[50%] lg:top-[30%]  -translate-y-1/2 h-4 w-4 text-gray-400"
   />
 
@@ -315,7 +315,9 @@ const Universities = () => {
           <div className="relative w-full max-w-xl rounded-xl border border-border bg-surface p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
             <button 
+              type="button"
               onClick={() => setSelectedUni(null)}
+              aria-label="Close university details"
               className="absolute top-4 right-4 p-1 rounded-full hover:bg-surface-2 transition-colors"
             >
               <X className="h-5 w-5" />
