@@ -23,11 +23,24 @@ const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
 const createEmptySection = () => ({
   sectionId: 'intro',
+  sectionKey: 'intro',
+  sectionName: 'Intro',
+  sectionType: 'CUSTOM',
   title: '',
+  heading: '',
   subtitle: '',
+  subHeading: '',
   content: '',
+  description: '',
   image: '',
+  backgroundImage: '',
+  alignment: 'left',
+  displayMode: 'default',
+  sortOrder: 0,
   isVisible: true,
+  isActive: true,
+  settings: {},
+  config: {},
   items: [],
 });
 
@@ -46,12 +59,29 @@ const titleizeSlug = (slug = '') =>
     .replace(/\b\w/g, (char) => char.toUpperCase())
     .trim() || 'Untitled Page';
 
+const slugifyPage = (value = '') =>
+  value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 const buildPageDraft = (slug) => {
   return {
     slug,
     title: titleizeSlug(slug),
+    internalName: titleizeSlug(slug),
     description: '',
     metaDescription: '',
+    seoTitle: '',
+    seoDescription: '',
+    seoKeywords: '',
+    canonicalUrl: '',
+    ogTitle: '',
+    ogDescription: '',
+    ogImage: '',
+    status: 'draft',
     sections: [createEmptySection()],
   };
 };
@@ -64,8 +94,17 @@ const normalizePageDraft = (page, slug) => {
     ...page,
     slug: page?.slug || slug,
     title: page?.title || fallback.title,
+    internalName: page?.internalName || fallback.internalName,
     description: page?.description || fallback.description,
     metaDescription: page?.metaDescription || fallback.metaDescription,
+    seoTitle: page?.seoTitle || page?.metaTitle || fallback.seoTitle,
+    seoDescription: page?.seoDescription || page?.metaDescription || fallback.seoDescription,
+    seoKeywords: Array.isArray(page?.seoKeywords) ? page.seoKeywords.join(', ') : (page?.seoKeywords || page?.metaKeywords || fallback.seoKeywords),
+    canonicalUrl: page?.canonicalUrl || fallback.canonicalUrl,
+    ogTitle: page?.ogTitle || fallback.ogTitle,
+    ogDescription: page?.ogDescription || fallback.ogDescription,
+    ogImage: page?.ogImage || fallback.ogImage,
+    status: page?.status || fallback.status,
     sections: Array.isArray(page?.sections) && page.sections.length > 0
       ? page.sections.map(normalizeSection)
       : fallback.sections,
@@ -97,16 +136,19 @@ const AdminDashboard = () => {
 
   // Core CMS Data states
   const [inquiries, setInquiries] = useState([]);
+  const [pages, setPages] = useState([]);
   const [universities, setUniversities] = useState([]);
   const [stories, setStories] = useState([]);
   const [destinations, setDestinations] = useState([]);
   
   const [loading, setLoading] = useState(true);
+  const [pagesLoading, setPagesLoading] = useState(true);
   const [pageLoading, setPageLoading] = useState(true);
 
   // Editing States
   const [editingPage, setEditingPage] = useState(null);
   const [selectedPageSlug, setSelectedPageSlug] = useState('home');
+  const [newPageForm, setNewPageForm] = useState({ slug: '', title: '' });
   const [selectedInquiry, setSelectedInquiry] = useState(null);
 
   // University Form states
@@ -155,9 +197,11 @@ const AdminDashboard = () => {
   // Fetch all dashboard data
   const loadBaseData = async () => {
     setLoading(true);
+    setPagesLoading(true);
     try {
-      const [inqRes, uniRes, storyRes, destRes] = await Promise.allSettled([
+      const [inqRes, pagesRes, uniRes, storyRes, destRes] = await Promise.allSettled([
         api.get('/inquiries'),
+        api.get('/pages'),
         api.get('/universities'),
         api.get('/success-stories'),
         api.get('/destinations')
@@ -165,6 +209,10 @@ const AdminDashboard = () => {
 
       if (inqRes.status === 'fulfilled') {
         setInquiries(Array.isArray(inqRes.value.data) ? inqRes.value.data : []);
+      }
+
+      if (pagesRes.status === 'fulfilled') {
+        setPages(Array.isArray(pagesRes.value.data) ? pagesRes.value.data : []);
       }
 
       if (uniRes.status === 'fulfilled') {
@@ -182,6 +230,19 @@ const AdminDashboard = () => {
       console.error('Error fetching dashboard datasets:', err);
     } finally {
       setLoading(false);
+      setPagesLoading(false);
+    }
+  };
+
+  const loadPages = async () => {
+    setPagesLoading(true);
+    try {
+      const pageRes = await api.get('/pages');
+      setPages(Array.isArray(pageRes.data) ? pageRes.data : []);
+    } catch (err) {
+      console.error('Error fetching page list:', err);
+    } finally {
+      setPagesLoading(false);
     }
   };
 
@@ -497,7 +558,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const savePageContent = async () => {
+  const savePageContent = async (nextStatus = null) => {
     if (!editingPage) return;
 
     const validationErrors = validatePageDraft(editingPage);
@@ -509,19 +570,204 @@ const AdminDashboard = () => {
       const payload = {
         ...editingPage,
         title: editingPage.title || titleizeSlug(selectedPageSlug),
+        status: nextStatus || editingPage.status || 'draft',
+        seoKeywords: Array.isArray(editingPage.seoKeywords)
+          ? editingPage.seoKeywords
+          : String(editingPage.seoKeywords || '')
+              .split(',')
+              .map((keyword) => keyword.trim())
+              .filter(Boolean),
       };
 
-      await api.put(`/pages/${selectedPageSlug}`, payload);
-      await loadPageContent(selectedPageSlug);
+      if (nextStatus === 'published') {
+        await api.post(`/pages/${selectedPageSlug}/publish`, payload);
+      } else if (nextStatus === 'draft' && editingPage.status === 'published') {
+        await api.post(`/pages/${selectedPageSlug}/unpublish`, payload);
+      } else {
+        await api.put(`/pages/${selectedPageSlug}`, payload);
+      }
+
+      await refreshPageContent();
       notify('Page content updated successfully.', {
         tone: 'success',
-        title: 'Page saved',
+        title: nextStatus === 'published' ? 'Page published' : 'Page saved',
       });
     } catch (err) {
       console.error('Error saving page changes:', err);
       notify(err.response?.data?.message || 'Failed to save page changes.', {
         tone: 'error',
         title: 'Page save failed',
+      });
+    }
+  };
+
+  const createNewPage = async () => {
+    const slug = slugifyPage(newPageForm.slug || newPageForm.title);
+
+    if (!slug) {
+      notify('Enter a page slug or title to create a new page.', {
+        tone: 'error',
+        title: 'Missing slug',
+      });
+      return;
+    }
+
+    if (pages.some((page) => page.slug === slug)) {
+      notify('A page with that slug already exists.', {
+        tone: 'error',
+        title: 'Duplicate page',
+      });
+      return;
+    }
+
+    try {
+      await api.post('/pages', {
+        slug,
+        title: newPageForm.title || titleizeSlug(slug),
+        internalName: newPageForm.title || titleizeSlug(slug),
+        status: 'draft',
+        description: '',
+        metaDescription: '',
+        sections: [createEmptySection()],
+      });
+
+      setNewPageForm({ slug: '', title: '' });
+      await loadPages();
+      setSelectedPageSlug(slug);
+      notify('New page created in draft state.', {
+        tone: 'success',
+        title: 'Page created',
+      });
+    } catch (err) {
+      console.error('Error creating page:', err);
+      notify(err.response?.data?.message || 'Unable to create page.', {
+        tone: 'error',
+        title: 'Create failed',
+      });
+    }
+  };
+
+  const refreshPageContent = async () => {
+    await Promise.all([loadPages(), loadPageContent(selectedPageSlug)]);
+  };
+
+  const publishExistingPage = async (page) => {
+    const slug = page?.slug;
+    if (!slug) return;
+
+    try {
+      const payload = editingPage && selectedPageSlug === slug ? editingPage : page;
+      await api.post(`/pages/${slug}/publish`, payload);
+      await refreshPageContent();
+      notify('Page published successfully.', {
+        tone: 'success',
+        title: 'Page published',
+      });
+    } catch (err) {
+      console.error('Error publishing page:', err);
+      notify(err.response?.data?.message || 'Unable to publish page.', {
+        tone: 'error',
+        title: 'Publish failed',
+      });
+    }
+  };
+
+  const unpublishExistingPage = async (page) => {
+    const slug = page?.slug;
+    if (!slug) return;
+
+    try {
+      const payload = editingPage && selectedPageSlug === slug ? editingPage : page;
+      await api.post(`/pages/${slug}/unpublish`, payload);
+      await refreshPageContent();
+      notify('Page moved back to draft.', {
+        tone: 'success',
+        title: 'Draft restored',
+      });
+    } catch (err) {
+      console.error('Error unpublishing page:', err);
+      notify(err.response?.data?.message || 'Unable to move page to draft.', {
+        tone: 'error',
+        title: 'Unpublish failed',
+      });
+    }
+  };
+
+  const archiveExistingPage = async (page) => {
+    const slug = page?.slug;
+    if (!slug) return;
+
+    const confirmed = await confirm({
+      title: 'Archive this page?',
+      description: 'The page will no longer be publicly visible, but its content will be kept in CMS.',
+      confirmLabel: 'Archive page',
+      cancelLabel: 'Keep page',
+      tone: 'error',
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/pages/${slug}`);
+      await loadPages();
+      if (selectedPageSlug === slug) {
+        const fallbackPage = pages.find((item) => item.slug !== slug) || null;
+        if (fallbackPage) {
+          setSelectedPageSlug(fallbackPage.slug);
+        } else {
+          setSelectedPageSlug('home');
+        }
+      }
+      notify('Page archived successfully.', {
+        tone: 'success',
+        title: 'Page archived',
+      });
+    } catch (err) {
+      console.error('Error archiving page:', err);
+      notify(err.response?.data?.message || 'Unable to archive page.', {
+        tone: 'error',
+        title: 'Archive failed',
+      });
+    }
+  };
+
+  const duplicateExistingPage = async (page) => {
+    const slug = page?.slug;
+    if (!slug) return;
+
+    try {
+      const res = await api.get(`/pages/${slug}`);
+      const source = res.data || page;
+      const baseSlug = `${slug}-copy`;
+      let duplicateSlug = baseSlug;
+      let suffix = 2;
+      while (pages.some((item) => item.slug === duplicateSlug)) {
+        duplicateSlug = `${baseSlug}-${suffix}`;
+        suffix += 1;
+      }
+
+      await api.post('/pages', {
+        ...source,
+        slug: duplicateSlug,
+        title: `${source.title || titleizeSlug(slug)} Copy`,
+        internalName: `${source.internalName || source.title || titleizeSlug(slug)} Copy`,
+        status: 'draft',
+        isPublished: false,
+        publishedAt: null,
+        archivedAt: null,
+      });
+
+      await loadPages();
+      setSelectedPageSlug(duplicateSlug);
+      notify('Page duplicated as a draft.', {
+        tone: 'success',
+        title: 'Page duplicated',
+      });
+    } catch (err) {
+      console.error('Error duplicating page:', err);
+      notify(err.response?.data?.message || 'Unable to duplicate page.', {
+        tone: 'error',
+        title: 'Duplicate failed',
       });
     }
   };
@@ -801,6 +1047,187 @@ const AdminDashboard = () => {
               {/* TAB 2: EDIT PAGES */}
               {activeTab === 'pages' && editingPage && (
                 <div className="space-y-6">
+                  <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                    <div className="flex flex-col gap-3 border-b border-border pb-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Pages</p>
+                        <h2 className="font-display text-2xl font-semibold">Manage every public page</h2>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Create, duplicate, publish, archive, and edit all user-facing pages from one admin view.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={refreshPageContent}
+                        className="inline-flex items-center justify-center rounded border border-border bg-background px-4 py-2 text-xs font-semibold transition hover:border-primary hover:text-primary"
+                      >
+                        <RefreshCw className="mr-1 h-3.5 w-3.5" />
+                        Refresh pages
+                      </button>
+                    </div>
+
+                    <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.9fr)]">
+                      <div>
+                        {pagesLoading ? (
+                          <div className="flex items-center justify-center rounded-xl border border-dashed border-border bg-background/60 py-14">
+                            <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                          </div>
+                        ) : pages.length === 0 ? (
+                          <div className="rounded-xl border border-dashed border-border bg-background/60 px-4 py-8 text-sm text-muted-foreground">
+                            No pages found yet. Create your first page on the right.
+                          </div>
+                        ) : (
+                          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            {pages.map((page) => {
+                              const isActive = page.slug === selectedPageSlug;
+                              const statusTone =
+                                page.status === 'published'
+                                  ? 'bg-green-500/10 text-green-600'
+                                  : page.status === 'archived'
+                                    ? 'bg-red-500/10 text-red-600'
+                                    : 'bg-amber-500/10 text-amber-600';
+
+                              return (
+                                <div
+                                  key={page._id || page.slug}
+                                  className={`rounded-xl border p-4 shadow-sm transition ${
+                                    isActive
+                                      ? 'border-primary bg-primary/5'
+                                      : 'border-border bg-background hover:border-primary/40 hover:bg-surface-2'
+                                  }`}
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <button
+                                      type="button"
+                                      onClick={() => startTransition(() => setSelectedPageSlug(page.slug))}
+                                      className="text-left"
+                                    >
+                                      <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                                        {page.slug}
+                                      </p>
+                                      <h3 className="mt-1 font-display text-lg font-semibold">{page.title}</h3>
+                                    </button>
+                                    <span className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wider ${statusTone}`}>
+                                      {page.status || 'draft'}
+                                    </span>
+                                  </div>
+
+                                  <p className="mt-3 text-xs text-muted-foreground">
+                                    {page.sectionsCount || 0} sections · {page.activeSectionsCount || 0} visible
+                                  </p>
+                                  <p className="mt-1 text-[11px] text-muted-foreground">
+                                    Updated {formatUtcDateTime(page.updatedAt)}
+                                  </p>
+
+                                  <div className="mt-4 flex flex-wrap gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => startTransition(() => setSelectedPageSlug(page.slug))}
+                                      className="rounded-md border border-border bg-background px-3 py-1.5 text-[11px] font-semibold hover:border-primary hover:text-primary"
+                                    >
+                                      Edit
+                                    </button>
+                                    <Link
+                                      href={`/${page.slug === 'home' ? '' : page.slug}`}
+                                      target="_blank"
+                                      className="rounded-md border border-border bg-background px-3 py-1.5 text-[11px] font-semibold hover:border-primary hover:text-primary inline-flex items-center gap-1"
+                                    >
+                                      <Eye className="h-3 w-3" /> View
+                                    </Link>
+                                    {page.status === 'published' ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => unpublishExistingPage(page)}
+                                        className="rounded-md border border-border bg-background px-3 py-1.5 text-[11px] font-semibold hover:border-primary hover:text-primary"
+                                      >
+                                        Unpublish
+                                      </button>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => publishExistingPage(page)}
+                                        className="rounded-md border border-border bg-background px-3 py-1.5 text-[11px] font-semibold hover:border-primary hover:text-primary"
+                                      >
+                                        Publish
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() => duplicateExistingPage(page)}
+                                      className="rounded-md border border-border bg-background px-3 py-1.5 text-[11px] font-semibold hover:border-primary hover:text-primary"
+                                    >
+                                      Duplicate
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => archiveExistingPage(page)}
+                                      className="rounded-md border border-red-500/20 bg-red-500/5 px-3 py-1.5 text-[11px] font-semibold text-red-600 hover:bg-red-500 hover:text-white"
+                                    >
+                                      Archive
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="rounded-xl border border-border bg-background p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Create page</p>
+                        <div className="mt-3 space-y-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-semibold uppercase text-muted-foreground">Slug</label>
+                            <input
+                              type="text"
+                              value={newPageForm.slug}
+                              onChange={(e) => setNewPageForm((current) => ({ ...current, slug: e.target.value }))}
+                              placeholder="about"
+                              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-semibold uppercase text-muted-foreground">Title</label>
+                            <input
+                              type="text"
+                              value={newPageForm.title}
+                              onChange={(e) => setNewPageForm((current) => ({ ...current, title: e.target.value }))}
+                              placeholder="About Cornerstone"
+                              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={createNewPage}
+                            className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary-hover"
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Create Page
+                          </button>
+                          <div className="mt-2">
+                            <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1.5">Quick create common pages</p>
+                            <div className="flex flex-wrap gap-1">
+                              {['about', 'how-it-works', 'admissions', 'pathways', 'programmes', 'academics', 'privacy', 'terms', 'accessibility'].map((slug) => (
+                                <button
+                                  key={slug}
+                                  type="button"
+                                  onClick={() => {
+                                    setNewPageForm({ slug, title: titleizeSlug(slug) });
+                                    createNewPage();
+                                  }}
+                                  disabled={pages.some((p) => p.slug === slug)}
+                                  className="rounded border border-border bg-surface px-2 py-1 text-[10px] font-medium hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                  {pages.some((p) => p.slug === slug) ? `${titleizeSlug(slug)} ✓` : titleizeSlug(slug)}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex justify-between items-center border-b border-border pb-4">
                     <h2 className="font-display text-2xl font-semibold">Edit Page Layouts</h2>
                     <div className="flex flex-wrap items-center gap-2">
@@ -809,8 +1236,11 @@ const AdminDashboard = () => {
                         onChange={(e) => startTransition(() => setSelectedPageSlug(e.target.value))}
                         className="p-1.5 border border-border bg-surface rounded text-xs focus:outline-none"
                       >
-                        <option value="home">Home Page</option>
-                        <option value="for-parents">For Parents Center</option>
+                        {pages.map((page) => (
+                          <option key={page.slug} value={page.slug}>
+                            {page.title} ({page.slug})
+                          </option>
+                        ))}
                       </select>
                       <button
                         onClick={addPageSection}
@@ -819,10 +1249,16 @@ const AdminDashboard = () => {
                         <Plus className="mr-1 h-3.5 w-3.5" /> Add Section
                       </button>
                       <button
-                        onClick={savePageContent}
+                        onClick={() => savePageContent('draft')}
+                        className="inline-flex items-center justify-center rounded border border-border bg-surface px-4 py-1.5 text-xs font-semibold transition hover:border-primary hover:text-primary"
+                      >
+                        Save Draft
+                      </button>
+                      <button
+                        onClick={() => savePageContent('published')}
                         className="inline-flex items-center justify-center rounded bg-primary text-white px-4 py-1.5 text-xs font-semibold shadow"
                       >
-                        Save Changes
+                        Publish
                       </button>
                     </div>
                   </div>
@@ -855,6 +1291,68 @@ const AdminDashboard = () => {
                         className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
                       />
                     </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold uppercase text-muted-foreground">Status</label>
+                      <select
+                        value={editingPage.status || 'draft'}
+                        onChange={(e) => handlePageFieldChange('status', e.target.value)}
+                        className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                      >
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                        <option value="archived">Archived</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm lg:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold uppercase text-muted-foreground">Internal Name</label>
+                      <input
+                        type="text"
+                        value={editingPage.internalName || ''}
+                        onChange={(e) => handlePageFieldChange('internalName', e.target.value)}
+                        className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold uppercase text-muted-foreground">SEO Title</label>
+                      <input
+                        type="text"
+                        value={editingPage.seoTitle || ''}
+                        onChange={(e) => handlePageFieldChange('seoTitle', e.target.value)}
+                        className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold uppercase text-muted-foreground">SEO Description</label>
+                      <textarea
+                        value={editingPage.seoDescription || ''}
+                        onChange={(e) => handlePageFieldChange('seoDescription', e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold uppercase text-muted-foreground">SEO Keywords</label>
+                      <input
+                        type="text"
+                        value={editingPage.seoKeywords || ''}
+                        onChange={(e) => handlePageFieldChange('seoKeywords', e.target.value)}
+                        placeholder="pathway, university, study abroad"
+                        className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
+                    <div className="space-y-1 lg:col-span-2">
+                      <label className="text-[10px] font-semibold uppercase text-muted-foreground">Canonical URL</label>
+                      <input
+                        type="text"
+                        value={editingPage.canonicalUrl || ''}
+                        onChange={(e) => handlePageFieldChange('canonicalUrl', e.target.value)}
+                        placeholder="/"
+                        className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                      />
+                    </div>
                   </div>
 
                   <div className="rounded-lg border border-dashed border-border bg-surface-2/60 px-4 py-3 text-xs text-muted-foreground">
@@ -866,13 +1364,23 @@ const AdminDashboard = () => {
                     {(editingPage.sections || []).map((sec, secIdx) => (
                       <div key={sec._id || `${sec.sectionId}-${secIdx}`} className="border border-border bg-surface rounded-lg p-6 space-y-4 shadow-sm">
                         <div className="border-b border-border/60 pb-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                          <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                          <div className="grid gap-4 sm:grid-cols-3">
                             <div className="space-y-1">
                               <label className="text-[10px] font-semibold uppercase text-muted-foreground">Section ID</label>
                               <input
                                 type="text"
                                 value={sec.sectionId || ''}
                                 onChange={(e) => handlePageSectionChange(secIdx, 'sectionId', e.target.value)}
+                                className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-semibold uppercase text-muted-foreground">Section Name / Label</label>
+                              <input
+                                type="text"
+                                value={sec.sectionName || ''}
+                                onChange={(e) => handlePageSectionChange(secIdx, 'sectionName', e.target.value)}
+                                placeholder="e.g. Hero, About Us, Our Process"
                                 className="w-full px-3 py-1.5 border border-border bg-background rounded text-xs focus:outline-none focus:border-primary"
                               />
                             </div>
@@ -1021,15 +1529,27 @@ const AdminDashboard = () => {
                                   </div>
                                   <div className="grid gap-3 sm:grid-cols-2">
                                     <div className="space-y-1">
-                                      <label className="text-[9px] uppercase text-muted-foreground">Link</label>
+                                      <label className="text-[9px] uppercase text-muted-foreground">Link / Button URL</label>
                                       <input
                                         type="text"
-                                        value={item.link || ''}
-                                        onChange={(e) => handlePageItemChange(secIdx, itemIdx, 'link', e.target.value)}
+                                        value={item.buttonUrl || item.link || ''}
+                                        onChange={(e) => handlePageItemChange(secIdx, itemIdx, 'buttonUrl', e.target.value)}
                                         className="w-full px-2 py-1 border border-border bg-background rounded text-xs focus:outline-none"
                                         placeholder="/contact"
                                       />
                                     </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[9px] uppercase text-muted-foreground">Button Text</label>
+                                      <input
+                                        type="text"
+                                        value={item.buttonText || ''}
+                                        onChange={(e) => handlePageItemChange(secIdx, itemIdx, 'buttonText', e.target.value)}
+                                        className="w-full px-2 py-1 border border-border bg-background rounded text-xs focus:outline-none"
+                                        placeholder="Learn More"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="grid gap-3 sm:grid-cols-2">
                                     <div className="space-y-1">
                                       <label className="text-[9px] uppercase text-muted-foreground">Image</label>
                                       <div className="flex items-center gap-2">

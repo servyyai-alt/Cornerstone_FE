@@ -41,9 +41,11 @@ export async function generateMetadata() {
     : null;
 
   return createPageMetadata({
-    title: pageData?.title || siteConfig.name,
+    title: pageData?.seoTitle || pageData?.metaTitle || pageData?.title || siteConfig.name,
     description:
+      seoPage?.seoDescription ||
       seoPage?.metaDescription ||
+      pageData?.seoDescription ||
       pageData?.metaDescription ||
       pageData?.description ||
       heroSection?.subtitle ||

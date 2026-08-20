@@ -9,6 +9,32 @@ import Container from '../../../components/ui/Container';
 
 // For Parents page metadata is handled by the root layout or can be added via CMS
 
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const trimValue = (value) => String(value ?? '').trim();
+
+const sortByOrder = (items = []) =>
+  [...items].sort((a, b) => {
+    const orderDelta = toNumber(a.sortOrder, 0) - toNumber(b.sortOrder, 0);
+    if (orderDelta !== 0) return orderDelta;
+    return trimValue(a.title || a.sectionId || a.label || '').localeCompare(
+      trimValue(b.title || b.sectionId || b.label || '')
+    );
+  });
+
+const normalizePageSections = (pageData) =>
+  sortByOrder(Array.isArray(pageData?.sections) ? pageData.sections : [])
+    .filter((section) => section?.isVisible !== false && section?.isActive !== false)
+    .map((section) => ({
+      ...section,
+      items: sortByOrder(Array.isArray(section.items) ? section.items : []).filter(
+        (item) => item?.isActive !== false
+      ),
+    }));
+
 const ForParents = () => {
   const routeData = useRouteData();
   const initialPageData = routeData?.pageData || null;
@@ -39,7 +65,7 @@ const ForParents = () => {
     );
   }
 
-  const sections = (pageData?.sections || []).filter((section) => section.isVisible !== false);
+  const sections = normalizePageSections(pageData);
   const getSection = (id) =>
     sections.find((s) => s.sectionId === id) || { title: '', subtitle: '', description: '', content: '', items: [] };
 
