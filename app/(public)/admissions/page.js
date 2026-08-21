@@ -33,7 +33,7 @@ const fallback = (
         { title: '04. Offer & Financial Outline', desc: 'Receive your enrollment offer letter alongside structured financial estimates, loan assistance guides, and stage fee splits.' },
         { title: '05. Campus Enrolment', desc: 'Complete enrollment registration, collect academic materials, and join our induction program on campus in India.' },
       ].map((st, i) => (
-        <div key={i} className="border border-border bg-surface p-6 rounded-xl flex gap-6 items-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.1)]">
+        <div key={i} className="border border-border bg-surface p-6 rounded-xl flex gap-6 items-start shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.1)]">
           <div className="space-y-1">
             <h3 className="font-display text-lg font-bold text-foreground">{st.title}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{st.desc}</p>

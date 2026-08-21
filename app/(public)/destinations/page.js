@@ -56,7 +56,7 @@ const Destinations = () => {
         {destinations.map((dest) => (
           <div 
             key={dest._id} 
-            className="rounded-xl border border-border bg-surface p-8 shadow-sm grid gap-8 md:grid-cols-[1fr_2fr] transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]"
+            className="rounded-xl border border-border bg-surface p-8 shadow-sm grid gap-8 md:grid-cols-[1fr_2fr] transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]"
           >
             {/* Visual Header */}
             <div className="flex flex-col justify-between">

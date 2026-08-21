@@ -67,7 +67,7 @@ const AdmissionsEligibility = () => {
       </Container>
 
       <Container>
-        <div className="rounded-xl border border-border bg-surface p-8 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]">
+        <div className="rounded-xl border border-border bg-surface p-8 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]">
           {!checked ? (
             <form onSubmit={handleCheck} className="space-y-4">
               {submitError ? (

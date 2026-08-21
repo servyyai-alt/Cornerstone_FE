@@ -829,25 +829,25 @@ const AdminDashboard = () => {
         <aside className="w-full md:w-64 border-r border-border bg-surface p-4 flex flex-col gap-1.5">
           <button
             onClick={() => startTransition(() => setActiveTab('inquiries'))}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'inquiries' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(232,181,67,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'inquiries' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(185,151,80,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
           >
             <Inbox className="h-4 w-4" /> Inbox Leads ({inquiries.filter(i => i.status === 'unread').length})
           </button>
           <button
             onClick={() => startTransition(() => setActiveTab('pages'))}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'pages' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(232,181,67,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'pages' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(185,151,80,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
           >
             <FileText className="h-4 w-4" /> Edit Page Content
           </button>
           <button
             onClick={() => startTransition(() => setActiveTab('universities'))}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'universities' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(232,181,67,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'universities' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(185,151,80,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
           >
             <GraduationCap className="h-4 w-4" /> Partner Universities ({universities.length})
           </button>
           <button
             onClick={() => startTransition(() => setActiveTab('stories'))}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'stories' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(232,181,67,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm font-medium transition-all duration-200 ${activeTab === 'stories' ? 'bg-primary text-primary-foreground shadow-[0_4px_12px_-4px_rgba(185,151,80,0.2)]' : 'hover:bg-surface-2 hover:text-primary'}`}
           >
             <Sparkles className="h-4 w-4" /> Success Stories ({stories.length})
           </button>
@@ -945,7 +945,7 @@ const AdminDashboard = () => {
                           <div 
                             key={inq._id}
                             onClick={() => setSelectedInquiry(inq)}
-                            className={`p-4 rounded-lg border cursor-pointer flex justify-between items-center transition-all duration-200 ${selectedInquiry?._id === inq._id ? 'border-primary bg-primary/5 shadow-[0_4px_12px_-4px_rgba(232,181,67,0.12)]' : 'border-border bg-surface hover:bg-surface-2 hover:border-primary/30 hover:-translate-y-0.5'}`}
+                            className={`p-4 rounded-lg border cursor-pointer flex justify-between items-center transition-all duration-200 ${selectedInquiry?._id === inq._id ? 'border-primary bg-primary/5 shadow-[0_4px_12px_-4px_rgba(185,151,80,0.12)]' : 'border-border bg-surface hover:bg-surface-2 hover:border-primary/30 hover:-translate-y-0.5'}`}
                           >
                             <div>
                               <div className="flex items-center gap-2">

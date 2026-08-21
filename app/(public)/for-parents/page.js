@@ -137,7 +137,7 @@ const ForParents = () => {
               { title: 'Stage 3 · Partner university overseas', subtitle: 'Final Years', content: 'Full international student experience and degree.' },
               { title: 'Stage 4 · Same or new university overseas', subtitle: 'Graduate Pathways', content: 'Master\'s or PG progression options.' }
             ]).map((step, idx) => (
-              <div key={idx} className="border border-border bg-surface p-6 rounded-xl relative shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.1)]">
+              <div key={idx} className="border border-border bg-surface p-6 rounded-xl relative shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.1)]">
                 <span className="absolute top-4 right-4 text-3xl font-display text-primary/10">0{idx + 1}</span>
                 <h3 className="font-semibold text-sm mb-1">{step.title}</h3>
                 <p className="text-xs text-primary uppercase tracking-widest font-semibold mb-3">{step.subtitle}</p>
@@ -175,7 +175,7 @@ const ForParents = () => {
               </div>
             </div>
           </div>
-          <div className="aspect-[4/3] rounded-xl border border-border bg-surface flex items-center justify-center p-8 text-center transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]">
+          <div className="aspect-[4/3] rounded-xl border border-border bg-surface flex items-center justify-center p-8 text-center transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]">
             <div>
               <Users className="h-12 w-12 text-primary mx-auto mb-4" />
               <p className="font-display text-xl mb-2">Wrap-around support</p>

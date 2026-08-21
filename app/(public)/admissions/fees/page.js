@@ -78,7 +78,7 @@ const AdmissionsFees = () => {
                 <button
                   onClick={() => setYearsInIndia(1)}
                   aria-pressed={yearsInIndia === 1}
-                  className={`p-4 text-left rounded-lg border transition-all duration-200 ${yearsInIndia === 1 ? 'border-primary bg-primary/5 shadow-[0_4px_12px_-4px_rgba(232,181,67,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
+                  className={`p-4 text-left rounded-lg border transition-all duration-200 ${yearsInIndia === 1 ? 'border-primary bg-primary/5 shadow-[0_4px_12px_-4px_rgba(185,151,80,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                 >
                   <h4 className={`text-sm font-bold ${yearsInIndia === 1 ? 'text-primary' : ''}`}>1 Year India · 2 Years Abroad</h4>
                   <p className="text-xs text-muted-foreground mt-1">Lower local prep, faster overseas transfer.</p>
@@ -86,7 +86,7 @@ const AdmissionsFees = () => {
                 <button
                   onClick={() => setYearsInIndia(2)}
                   aria-pressed={yearsInIndia === 2}
-                  className={`p-4 text-left rounded-lg border transition-all duration-200 ${yearsInIndia === 2 ? 'border-primary bg-primary/5 shadow-[0_4px_12px_-4px_rgba(232,181,67,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
+                  className={`p-4 text-left rounded-lg border transition-all duration-200 ${yearsInIndia === 2 ? 'border-primary bg-primary/5 shadow-[0_4px_12px_-4px_rgba(185,151,80,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                 >
                   <h4 className={`text-sm font-bold ${yearsInIndia === 2 ? 'text-primary' : ''}`}>2 Years India · 1 Year Abroad</h4>
                   <p className="text-xs text-muted-foreground mt-1">Maximum local savings, mature transfer readiness.</p>
@@ -119,7 +119,7 @@ const AdmissionsFees = () => {
           </div>
 
           <div className="lg:col-span-5 flex flex-col gap-6" aria-live="polite">
-            <div className="rounded-xl border border-border bg-surface p-6 shadow-sm flex-1 flex flex-col justify-between space-y-6 transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]">
+            <div className="rounded-xl border border-border bg-surface p-6 shadow-sm flex-1 flex flex-col justify-between space-y-6 transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]">
               <div>
                 <h3 className="font-display text-xl border-b border-border pb-3 mb-6">Financial Comparison</h3>
 
@@ -149,7 +149,7 @@ const AdmissionsFees = () => {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-surface p-6 shadow-sm space-y-4 transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]">
+            <div className="rounded-xl border border-border bg-surface p-6 shadow-sm space-y-4 transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">EMI Financing Options</h4>
               <div className="flex justify-between items-center">
                 <div>

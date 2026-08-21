@@ -35,7 +35,7 @@ const fallback = (
       ].map((card) => (
         <article
           key={card.href}
-          className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]"
+          className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]"
         >
           <h2 className="font-display text-xl text-foreground">{card.title}</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{card.description}</p>

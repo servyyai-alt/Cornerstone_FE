@@ -189,7 +189,7 @@ const CmsPageRenderer = ({ pageData: initialPageData, slug, fallback = null, cla
                 <Link
                   key={i}
                   href={item.buttonUrl || item.url || '#'}
-                  className="group rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)] block"
+                  className="group rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)] block"
                 >
                   <h3 className="font-display text-xl text-foreground mb-2">
                     {item.title || item.label || ''}
@@ -236,7 +236,7 @@ const CmsPageRenderer = ({ pageData: initialPageData, slug, fallback = null, cla
                 {items.map((item, i) => (
                   <div
                     key={i}
-                    className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]"
+                    className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]"
                   >
                     <div className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs mb-3">
                       {i + 1}
@@ -284,7 +284,7 @@ const CmsPageRenderer = ({ pageData: initialPageData, slug, fallback = null, cla
                   return (
                     <div
                       key={i}
-                      className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]"
+                      className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]"
                     >
                       <div className="flex items-start gap-4">
                         <span className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">
@@ -375,7 +375,7 @@ const CmsPageRenderer = ({ pageData: initialPageData, slug, fallback = null, cla
               {items.map((item, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]"
+                  className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]"
                 >
                   <h3 className="font-display text-xl text-foreground mb-2">
                     {item.title || item.label || ''}
@@ -412,7 +412,7 @@ const CmsPageRenderer = ({ pageData: initialPageData, slug, fallback = null, cla
               {items.map((item, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]"
+                  className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]"
                 >
                   <h3 className="font-display text-xl text-foreground mb-1">
                     {item.title || item.label || ''}
@@ -446,7 +446,7 @@ const CmsPageRenderer = ({ pageData: initialPageData, slug, fallback = null, cla
             )}
             <h2 className="font-display text-2xl text-primary mb-4">{sectionTitle}</h2>
             {sectionDescription && (
-              <div className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]">
+              <div className="rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]">
                 <p className="text-sm leading-relaxed text-muted-foreground">
                   {sectionDescription}
                 </p>

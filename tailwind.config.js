@@ -32,11 +32,15 @@ export default {
         muted: {
           DEFAULT: 'rgb(var(--muted) / <alpha-value>)',
           foreground: 'rgb(var(--muted-foreground) / <alpha-value>)',
-        }
+        },
+        secondary: {
+          DEFAULT: 'rgb(var(--secondary) / <alpha-value>)',
+          foreground: 'rgb(var(--secondary-foreground) / <alpha-value>)',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        display: ['Fraunces', 'serif'],
+        display: ['Inter', 'sans-serif'],
       },
       container: {
         center: true,

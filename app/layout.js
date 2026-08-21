@@ -55,7 +55,7 @@ export default async function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#e8b543" />
+        <meta name="theme-color" content="#B99750" />
       </head>
       <body className="min-h-screen bg-background text-foreground" suppressHydrationWarning>
         <Script id="theme-bootstrap" strategy="beforeInteractive">

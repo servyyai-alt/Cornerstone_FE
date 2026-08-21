@@ -62,7 +62,7 @@ const FindYourPathway = () => {
       </Container>
 
       <Container>
-        <div className="rounded-xl border border-border bg-surface p-8 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(232,181,67,0.08)]">
+        <div className="rounded-xl border border-border bg-surface p-8 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-[0_16px_32px_-10px_rgba(185,151,80,0.08)]">
           {!completed ? (
             <div className="space-y-6">
               {/* Progress Indicator */}
@@ -91,7 +91,7 @@ const FindYourPathway = () => {
                       <button
                         key={opt.val}
                         onClick={() => { setQualification(opt.val); nextStep(); }}
-                        className={`p-4 text-left rounded-lg border text-sm transition-all duration-200 ${qualification === opt.val ? 'border-primary bg-primary/5 font-medium shadow-[0_4px_12px_-4px_rgba(232,181,67,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
+                        className={`p-4 text-left rounded-lg border text-sm transition-all duration-200 ${qualification === opt.val ? 'border-primary bg-primary/5 font-medium shadow-[0_4px_12px_-4px_rgba(185,151,80,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                       >
                         {opt.label}
                       </button>
@@ -116,7 +116,7 @@ const FindYourPathway = () => {
                       <button
                         key={sub}
                         onClick={() => { setSubject(sub); nextStep(); }}
-                        className={`p-4 text-left rounded-lg border text-sm transition-all duration-200 ${subject === sub ? 'border-primary bg-primary/5 font-medium shadow-[0_4px_12px_-4px_rgba(232,181,67,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
+                        className={`p-4 text-left rounded-lg border text-sm transition-all duration-200 ${subject === sub ? 'border-primary bg-primary/5 font-medium shadow-[0_4px_12px_-4px_rgba(185,151,80,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                       >
                         {sub}
                       </button>
@@ -144,7 +144,7 @@ const FindYourPathway = () => {
                       <button
                         key={dest}
                         onClick={() => { setDestination(dest); nextStep(); }}
-                        className={`p-4 text-left rounded-lg border text-sm transition-all duration-200 ${destination === dest ? 'border-primary bg-primary/5 font-medium shadow-[0_4px_12px_-4px_rgba(232,181,67,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
+                        className={`p-4 text-left rounded-lg border text-sm transition-all duration-200 ${destination === dest ? 'border-primary bg-primary/5 font-medium shadow-[0_4px_12px_-4px_rgba(185,151,80,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                       >
                         {dest}
                       </button>
@@ -170,7 +170,7 @@ const FindYourPathway = () => {
                       <button
                         key={opt.val}
                         onClick={() => { setBudget(opt.val); nextStep(); }}
-                        className={`p-4 text-left rounded-lg border text-sm transition-all duration-200 ${budget === opt.val ? 'border-primary bg-primary/5 font-medium shadow-[0_4px_12px_-4px_rgba(232,181,67,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
+                        className={`p-4 text-left rounded-lg border text-sm transition-all duration-200 ${budget === opt.val ? 'border-primary bg-primary/5 font-medium shadow-[0_4px_12px_-4px_rgba(185,151,80,0.12)]' : 'border-border bg-background hover:bg-surface-2 hover:border-primary/30'}`}
                       >
                         {opt.label}
                       </button>

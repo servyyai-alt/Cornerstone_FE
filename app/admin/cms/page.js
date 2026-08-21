@@ -64,7 +64,7 @@ const emptyWebsite = {
   darkLogo: '',
   footerLogo: '',
   favicon: '',
-  primaryColor: '#E8B543',
+  primaryColor: '#B99750',
   secondaryColor: '#0E1E34',
   theme: 'system',
   copyright: '',
