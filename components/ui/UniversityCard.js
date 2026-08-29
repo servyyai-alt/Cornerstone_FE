@@ -1,8 +1,34 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const UniversityCard = ({ university, className = "" }) => {
+  const cardRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.05 }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className={`rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md ${className}`}>
+    <div
+      ref={cardRef}
+      className={`rounded-xl border border-border bg-surface p-6 shadow-sm transition-all duration-500 transform ${
+        isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+      } hover:-translate-y-1.5 hover:border-primary/50 hover:shadow-[0_16px_36px_rgba(185,151,80,0.12)] ${className}`}
+    >
       <div className="flex flex-col gap-3">
         <div>
           <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">

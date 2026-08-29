@@ -145,7 +145,7 @@ const Universities = () => {
     value={search}
     onChange={(e) => setSearch(e.target.value)}
     placeholder="Search university or city..."
-    className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+    className="w-full h-10 pl-10 pr-4 border !text-black border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary"
   />
 </div>
             

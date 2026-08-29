@@ -61,7 +61,7 @@ const navItems = [
   },
 ];
 
-const Navbar = ({ siteSettings = {} }) => {
+const Navbar = ({ siteSettings = {}, pages = [] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -69,12 +69,38 @@ const Navbar = ({ siteSettings = {} }) => {
   const siteName = siteSettings.siteName || 'Cornerstone';
   const siteLogo = String(siteSettings.siteLogo || '').trim();
 
+  // Filter custom admin-created dynamic pages
+  const staticSlugs = [
+    'home', 'about', 'academics', 'admissions', 'contact', 'success', 
+    'destinations', 'universities', 'for-parents', 'how-it-works', 
+    'programmes', 'privacy', 'terms', 'accessibility', 'pathways'
+  ];
+  
+  const customPages = (pages || []).filter(
+    (page) => page && page.status === 'published' && !staticSlugs.includes(page.slug)
+  );
+
+  const dynamicNavItems = [...navItems];
+  if (customPages && customPages.length > 0) {
+    dynamicNavItems.push({
+      type: 'dropdown',
+      key: 'more-pages',
+      label: 'More',
+      items: customPages.map(page => ({
+        label: page.title || page.internalName,
+        path: `/${page.slug}`
+      }))
+    });
+  }
+
   // Stable dropdown ids keyed off the nav item key, generated once per render tree.
+  const morePagesId = useId();
   const dropdownIds = {
     pathways: useId(),
     universities: useId(),
     academics: useId(),
     admissions: useId(),
+    'more-pages': morePagesId,
   };
 
   useEffect(() => {
@@ -147,7 +173,7 @@ const Navbar = ({ siteSettings = {} }) => {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
-          {navItems.map((item) => {
+          {dynamicNavItems.map((item) => {
             if (item.type === 'link') {
               return (
                 <Link
@@ -179,21 +205,23 @@ const Navbar = ({ siteSettings = {} }) => {
                 </button>
 
                 {activeDropdown === item.key ? (
-                  <div
-                    id={dropdownIds[item.key]}
-                    role="menu"
-                    className="absolute left-0 mt-1 w-56 rounded-md border border-border bg-surface p-2 shadow-lg ring-1 ring-black/5"
-                  >
-                    {item.items.map((link) => (
-                      <Link
-                        key={link.path}
-                        href={link.path}
-                        role="menuitem"
-                        className="block rounded-md px-3 py-2 text-sm text-foreground/80 hover:bg-surface-2 hover:text-foreground"
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
+                  <div className="absolute left-0 top-full pt-1.5 w-56 z-50 transition-all duration-300 transform translate-y-0 opacity-100">
+                    <div
+                      id={dropdownIds[item.key]}
+                      role="menu"
+                      className="rounded-md border border-border bg-surface p-2 shadow-lg ring-1 ring-black/5"
+                    >
+                      {item.items.map((link) => (
+                        <Link
+                          key={link.path}
+                          href={link.path}
+                          role="menuitem"
+                          className="block rounded-md px-3 py-2 text-sm text-foreground/80 hover:bg-primary/10 hover:text-primary transition-colors duration-150"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -266,7 +294,7 @@ const Navbar = ({ siteSettings = {} }) => {
           id="mobile-navigation"
           className="border-t border-border bg-background px-6 py-4 space-y-4 lg:hidden"
         >
-          {navItems.map((item) => {
+          {dynamicNavItems.map((item) => {
             if (item.type === 'link') {
               return (
                 <Link

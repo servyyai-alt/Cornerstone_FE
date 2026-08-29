@@ -6,7 +6,7 @@ import Container from './ui/Container';
 const normalizeLogoList = (logos = []) =>
   logos.filter((logo) => logo && logo.status === 'active' && logo.logoImage).slice(0, 6);
 
-const Footer = ({ logos = [], siteSettings = {} }) => {
+const Footer = ({ logos = [], siteSettings = {}, pages = [] }) => {
   const activeLogos = normalizeLogoList(logos);
   const siteName = siteSettings.siteName || 'Cornerstone';
   const siteDescription =
@@ -16,6 +16,17 @@ const Footer = ({ logos = [], siteSettings = {} }) => {
   const supportPhone = siteSettings.supportPhone || '+91 98765 43210';
   const supportPhoneHref = `tel:${String(supportPhone).replace(/[\s()-]+/g, '')}`;
   const siteLogo = String(siteSettings.siteLogo || '').trim();
+
+  // Filter custom admin-created dynamic pages
+  const staticSlugs = [
+    'home', 'about', 'academics', 'admissions', 'contact', 'success', 
+    'destinations', 'universities', 'for-parents', 'how-it-works', 
+    'programmes', 'privacy', 'terms', 'accessibility', 'pathways'
+  ];
+  
+  const customPages = (pages || []).filter(
+    (page) => page && page.status === 'published' && !staticSlugs.includes(page.slug)
+  );
 
   return (
     <footer className="mt-auto border-t border-border bg-surface">
@@ -154,6 +165,16 @@ const Footer = ({ logos = [], siteSettings = {} }) => {
                     Contact Us
                   </Link>
                 </li>
+                {customPages && customPages.map((page) => (
+                  <li key={page.slug}>
+                    <Link
+                      href={`/${page.slug}`}
+                      className="text-sm text-foreground/80 transition-colors hover:text-primary"
+                    >
+                      {page.title || page.internalName}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </nav>
@@ -252,6 +273,9 @@ const Footer = ({ logos = [], siteSettings = {} }) => {
             </Link>
             <Link href="/terms" className="hover:text-primary">
               Terms &amp; Conditions
+            </Link>
+            <Link href="/admin/login" className="hover:text-primary font-semibold text-primary/80">
+              Admin Portal
             </Link>
           </div>
         </div>

@@ -8,9 +8,10 @@ export async function generateMetadata() {
 }
 
 export default async function PublicLayout({ children }) {
-  const [logos, siteSettings] = await Promise.all([
+  const [logos, siteSettings, publicPages] = await Promise.all([
     fetchPublicJson('/logos?public=1', []),
     getSiteSettings(),
+    fetchPublicJson('/pages/public', []),
   ]);
 
   return (
@@ -18,11 +19,11 @@ export default async function PublicLayout({ children }) {
       <a href="#main-content" className="skip-link" aria-label="Skip to main content">
         Skip to main content
       </a>
-      <Navbar siteSettings={siteSettings} />
+      <Navbar siteSettings={siteSettings} pages={publicPages} />
       <div id="main-content" tabIndex="-1" className="flex-1">
         {children}
       </div>
-      <Footer logos={logos} siteSettings={siteSettings} />
+      <Footer logos={logos} siteSettings={siteSettings} pages={publicPages} />
     </div>
   );
 }

@@ -235,6 +235,20 @@ a svg {
   pointer-events: none;
 }
 
+/* Reset minimum touch target size overrides inside admin panel workspaces and dialog overlays
+   to allow compact utility icon layouts (like Move Up/Down, edit, delete, copy, and close buttons)
+   to render at their intended sizes. */
+.admin-panel button,
+.admin-panel a,
+.admin-panel select,
+[role="dialog"] button,
+[role="dialog"] a,
+[role="dialog"] select,
+.chatbot-widget button {
+  min-height: auto;
+  min-width: auto;
+}
+
 /* ==============================
    Interactive Wizard Styling
    ============================== */

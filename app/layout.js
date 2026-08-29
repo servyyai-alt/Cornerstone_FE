@@ -1,6 +1,7 @@
 import './globals.css';
 import Script from 'next/script';
 import SeoJsonLd from '../components/SeoJsonLd';
+import ChatbotWidget from '../components/ChatbotWidget';
 import {
   createOrganizationSchema,
   createWebsiteSchema,
@@ -108,6 +109,9 @@ export default async function RootLayout({ children }) {
 
         <SeoJsonLd data={[organizationSchema, websiteSchema]} />
         {children}
+        {siteSettings.chatbotEnabled && siteSettings.chatbotUrl ? (
+          <ChatbotWidget chatbotUrl={siteSettings.chatbotUrl} />
+        ) : null}
       </body>
     </html>
   );

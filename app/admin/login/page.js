@@ -4,6 +4,7 @@ import React, { useState } from "react";
 
 // Admin pages are protected by robots.txt Disallow and client-side auth
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "../../../services/auth";
 import { Lock, User, Eye, EyeOff } from "lucide-react";
 import { useAdminFeedback } from "../../../components/admin/AdminFeedbackProvider";
@@ -169,6 +170,15 @@ const AdminLogin = () => {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
+
+        <div className="text-center pt-4 border-t border-border/40">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition font-medium"
+          >
+            ← Back to Homepage
+          </Link>
+        </div>
       </div>
     </main>
   );

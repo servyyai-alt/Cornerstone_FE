@@ -153,7 +153,7 @@ export const AdminFeedbackProvider = ({ children }) => {
       {children}
       {mounted
         ? createPortal(
-            <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[80] flex flex-col items-end gap-3 px-4 sm:bottom-6 sm:px-6">
+            <div className="pointer-events-none fixed inset-x-0 top-4 z-[80] flex flex-col items-end gap-3 px-4 sm:top-6 sm:px-6">
               {toasts.map((toast) => {
                 const config = toneConfig[toast.tone] || toneConfig.info;
                 const Icon = config.icon;
