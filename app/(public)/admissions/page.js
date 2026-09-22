@@ -44,6 +44,9 @@ const fallback = (
   </main>
 );
 
-export default function AdmissionsPage() {
-  return <CmsPageRenderer slug="admissions" fallback={fallback} />;
+import { fetchPublicJson } from '../../../lib/serverApi';
+
+export default async function AdmissionsPage() {
+  const pageData = await fetchPublicJson('/pages/admissions?public=1');
+  return <CmsPageRenderer pageData={pageData} slug="admissions" fallback={fallback} />;
 }

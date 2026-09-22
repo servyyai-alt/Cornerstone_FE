@@ -38,6 +38,9 @@ const fallback = (
   </main>
 );
 
-export default function ProgrammesPage() {
-  return <CmsPageRenderer slug="programmes" fallback={fallback} />;
+import { fetchPublicJson } from '../../../lib/serverApi';
+
+export default async function ProgrammesPage() {
+  const pageData = await fetchPublicJson('/pages/programmes?public=1');
+  return <CmsPageRenderer pageData={pageData} slug="programmes" fallback={fallback} />;
 }

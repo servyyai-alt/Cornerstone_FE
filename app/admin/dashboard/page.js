@@ -54,9 +54,7 @@ const createEmptySection = () => ({
 
 const normalizeSection = (section) => {
   if (!section) return section;
-  return String(section.sectionId || '').trim() === 'hero'
-    ? { ...section, sectionId: 'intro' }
-    : section;
+  return section;
 };
 
 const titleizeSlug = (slug = '') =>
@@ -2818,46 +2816,57 @@ const AdminDashboard = () => {
                                       </button>
                                     </div>
 
-                                    {/* Section Content & Stats Preview */}
-                                    <div className="flex-1 min-w-0 flex flex-col justify-between gap-2.5">
-                                      <div className="flex flex-wrap items-start justify-between gap-2">
-                                        <div>
-                                          <div className="flex items-center gap-2">
-                                            <h4 className="font-bold text-sm text-foreground">{sec.sectionName || sec.title || 'Untitled Section'}</h4>
-                                            <span className="font-mono text-[9px] bg-surface-2 text-muted-foreground px-1.5 py-0.5 rounded border border-border">ID: {sec.sectionId}</span>
-                                            <span className="text-[8px] font-bold bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded tracking-wider uppercase">{sec.sectionType || 'CUSTOM'}</span>
-                                          </div>
-                                          
-                                          {/* Snippet body text preview */}
-                                          {(sec.title || sec.description || sec.content) && (
-                                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 max-w-2xl">
-                                              {sec.title && <span className="font-semibold text-foreground">{sec.title} &bull; </span>}
-                                              {sec.description || sec.content}
-                                            </p>
-                                          )}
-                                        </div>
+                                     {/* Section Content & Stats Preview */}
+                                     <div className="flex-1 min-w-0 flex flex-col justify-between gap-2.5">
+                                       <div className="flex flex-wrap items-start justify-between gap-3">
+                                         <div className="flex items-start gap-3 min-w-0 flex-1">
+                                           {sec.image && (
+                                             <div className="h-14 w-20 relative rounded-lg border border-border overflow-hidden shrink-0 bg-surface-2 shadow-xs">
+                                               <Img src={sec.image} alt="Section thumbnail" className="object-cover w-full h-full" />
+                                             </div>
+                                           )}
+                                           <div className="min-w-0 flex-1">
+                                             <div className="flex flex-wrap items-center gap-2">
+                                               <h4 className="font-bold text-sm text-foreground">{sec.sectionName || sec.title || 'Untitled Section'}</h4>
+                                               <span className="font-mono text-[9px] bg-surface-2 text-muted-foreground px-1.5 py-0.5 rounded border border-border">ID: {sec.sectionId}</span>
+                                               <span className="text-[8px] font-bold bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded tracking-wider uppercase">{sec.sectionType || 'CUSTOM'}</span>
+                                               {sec.image && (
+                                                 <span className="text-[8px] font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20 px-1.5 py-0.5 rounded tracking-wider uppercase">Image Attached</span>
+                                               )}
+                                             </div>
+                                             
+                                             {/* Snippet body text preview */}
+                                             {(sec.title || sec.description || sec.content) && (
+                                               <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 max-w-2xl">
+                                                 {sec.title && <span className="font-semibold text-foreground">{sec.title} &bull; </span>}
+                                                 {sec.description || sec.content}
+                                               </p>
+                                             )}
+                                           </div>
+                                         </div>
 
-                                        <div className="flex items-center gap-1.5 shrink-0 select-none">
-                                          <span className={`inline-block h-2 w-2 rounded-full ${isVisible ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
-                                          <span className="text-[10px] font-semibold text-muted-foreground uppercase">{isVisible ? 'Active' : 'Hidden'}</span>
-                                        </div>
-                                      </div>
+                                         <div className="flex items-center gap-1.5 shrink-0 select-none">
+                                           <span className={`inline-block h-2 w-2 rounded-full ${isVisible ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`} />
+                                           <span className="text-[10px] font-semibold text-muted-foreground uppercase">{isVisible ? 'Active' : 'Hidden'}</span>
+                                         </div>
+                                       </div>
 
-                                      {/* Sub-item thumbnails preview if list items exist */}
-                                      {sec.items && sec.items.length > 0 && (
-                                        <div className="flex flex-wrap items-center gap-2 border-t border-border/40 pt-2 text-[10px] text-muted-foreground">
-                                          <span className="font-bold text-foreground">Cards Grid ({sec.items.length}):</span>
-                                          <div className="flex items-center gap-1 overflow-hidden max-w-md">
-                                            {sec.items.slice(0, 4).map((item, idx) => (
-                                              <span key={idx} className="bg-surface-2 px-2 py-0.5 rounded border border-border truncate max-w-[90px] font-medium" title={item.title}>
-                                                {item.title || `Item ${idx+1}`}
-                                              </span>
-                                            ))}
-                                            {sec.items.length > 4 && <span>+{sec.items.length - 4} more</span>}
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
+                                       {/* Sub-item thumbnails preview if list items exist */}
+                                       {sec.items && sec.items.length > 0 && (
+                                         <div className="flex flex-wrap items-center gap-2 border-t border-border/40 pt-2 text-[10px] text-muted-foreground">
+                                           <span className="font-bold text-foreground">Cards Grid ({sec.items.length}):</span>
+                                           <div className="flex items-center gap-1.5 overflow-hidden max-w-md">
+                                             {sec.items.slice(0, 4).map((item, idx) => (
+                                               <span key={idx} className="inline-flex items-center gap-1 bg-surface-2 px-2 py-0.5 rounded border border-border truncate max-w-[110px] font-medium" title={item.title}>
+                                                 {item.image && <span className="h-1.5 w-1.5 rounded-full bg-primary inline-block shrink-0" title="Has thumbnail" />}
+                                                 {item.title || `Item ${idx+1}`}
+                                               </span>
+                                             ))}
+                                             {sec.items.length > 4 && <span>+{sec.items.length - 4} more</span>}
+                                           </div>
+                                         </div>
+                                       )}
+                                     </div>
 
                                     {/* Action button menu panel */}
                                     <div className="flex flex-col sm:flex-row items-center gap-1.5 justify-center shrink-0 border-l border-border/60 pl-4 select-none">
@@ -3395,6 +3404,10 @@ const AdminDashboard = () => {
                             setEditingSectionIdx(null);
                             setEditingCardIdx(null);
                             setEditingCardItem(null);
+                            notify('Section edits applied to draft. Click Save Draft or Publish Changes to save.', {
+                              tone: 'success',
+                              title: 'Edits applied',
+                            });
                           }}
                           className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-semibold shadow-sm transition"
                         >

@@ -46,6 +46,9 @@ const fallback = (
   </main>
 );
 
-export default function PathwaysPage() {
-  return <CmsPageRenderer slug="pathways" fallback={fallback} />;
+import { fetchPublicJson } from '../../../lib/serverApi';
+
+export default async function PathwaysPage() {
+  const pageData = await fetchPublicJson('/pages/pathways?public=1');
+  return <CmsPageRenderer pageData={pageData} slug="pathways" fallback={fallback} />;
 }

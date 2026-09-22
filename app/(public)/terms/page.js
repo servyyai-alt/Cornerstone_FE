@@ -66,6 +66,9 @@ const fallback = (
   </main>
 );
 
-export default function TermsPage() {
-  return <CmsPageRenderer slug="terms" fallback={fallback} />;
+import { fetchPublicJson } from '../../../lib/serverApi';
+
+export default async function TermsPage() {
+  const pageData = await fetchPublicJson('/pages/terms?public=1');
+  return <CmsPageRenderer pageData={pageData} slug="terms" fallback={fallback} />;
 }

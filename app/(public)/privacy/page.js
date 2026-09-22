@@ -65,6 +65,9 @@ const fallback = (
   </main>
 );
 
-export default function PrivacyPage() {
-  return <CmsPageRenderer slug="privacy" fallback={fallback} />;
+import { fetchPublicJson } from '../../../lib/serverApi';
+
+export default async function PrivacyPage() {
+  const pageData = await fetchPublicJson('/pages/privacy?public=1');
+  return <CmsPageRenderer pageData={pageData} slug="privacy" fallback={fallback} />;
 }

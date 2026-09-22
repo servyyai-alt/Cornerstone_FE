@@ -45,6 +45,9 @@ const fallback = (
   </main>
 );
 
-export default function AcademicsPage() {
-  return <CmsPageRenderer slug="academics" fallback={fallback} />;
+import { fetchPublicJson } from '../../../lib/serverApi';
+
+export default async function AcademicsPage() {
+  const pageData = await fetchPublicJson('/pages/academics?public=1');
+  return <CmsPageRenderer pageData={pageData} slug="academics" fallback={fallback} />;
 }

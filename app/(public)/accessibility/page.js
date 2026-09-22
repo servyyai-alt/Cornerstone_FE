@@ -78,6 +78,9 @@ const fallback = (
   </main>
 );
 
-export default function AccessibilityPage() {
-  return <CmsPageRenderer slug="accessibility" fallback={fallback} />;
+import { fetchPublicJson } from '../../../lib/serverApi';
+
+export default async function AccessibilityPage() {
+  const pageData = await fetchPublicJson('/pages/accessibility?public=1');
+  return <CmsPageRenderer pageData={pageData} slug="accessibility" fallback={fallback} />;
 }

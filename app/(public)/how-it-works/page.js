@@ -50,6 +50,9 @@ const fallback = (
   </main>
 );
 
-export default function HowItWorksPage() {
-  return <CmsPageRenderer slug="how-it-works" fallback={fallback} />;
+import { fetchPublicJson } from '../../../lib/serverApi';
+
+export default async function HowItWorksPage() {
+  const pageData = await fetchPublicJson('/pages/how-it-works?public=1');
+  return <CmsPageRenderer pageData={pageData} slug="how-it-works" fallback={fallback} />;
 }
